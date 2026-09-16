@@ -1,88 +1,36 @@
 'use strict';
 
-// ⚠️ REEMPLAZA ESTOS DATOS CON LOS DE TU SUPABASE (Settings > API)
+/* ============================================
+   CONFIGURACIÓN
+   ============================================ */
 const SUPABASE_URL = 'https://knpwidydhsgdudyjbnb.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_J0qEWeQpaUiZhnZ5fH7sog_tn42hXix';
+const WHATSAPP_NUMBER = '50689413632';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 document.addEventListener('DOMContentLoaded', () => {
+  initNav();
   cargarProyectos();
   cargarCalificaciones();
+  initReviewForm();
+  initContactForm();
+  initAdminPanel();
+  initRevealOnScroll();
 });
 
 /* ============================================
-   1. CARGAR PROYECTOS Y AUTO-NUMERACIÓN
+   NAV
    ============================================ */
-async function cargarProyectos() {
-  const grid = document.getElementById('portfolioGrid');
-  const countDisplay = document.getElementById('projectCount');
-  const emptyMsg = document.getElementById('portfolioEmpty');
-  if (!grid) return;
-
-  const { data: proyectos, error } = await supabase
-    .from('projects')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error cargando proyectos:', error);
-    return;
-  }
-
-  if (countDisplay) countDisplay.textContent = proyectos.length;
-  grid.innerHTML = '';
-
-  if (!proyectos || proyectos.length === 0) {
-    if (emptyMsg) emptyMsg.classList.add('is-visible');
-    return;
-  }
-
-  if (emptyMsg) emptyMsg.classList.remove('is-visible');
-
-  const categoryCounts = {};
-
-  proyectos.forEach((p) => {
-    const cat = p.category;
-    if (!categoryCounts[cat]) {
-      categoryCounts[cat] = 1;
-    } else {
-      categoryCounts[cat]++;
-    }
-
-    const card = document.createElement('a');
-    card.href = p.project_link || '#';
-    card.target = '_blank';
-    card.className = 'project';
-    card.setAttribute('data-category', cat);
-
-    card.innerHTML = `
-      <div class="project__visual" style="background-image: url('${p.image_url}'); background-size: cover; background-position: center;">
-        <span class="project__scanline" aria-hidden="true"></span>
-        <span class="project__code">PROYECTO #${categoryCounts[cat]}</span>
-      </div>
-      <div class="project__info">
-        <span class="project__category">${cat}</span>
-        <h3 class="project__title">${p.title}</h3>
-      </div>
-    `;
-    grid.appendChild(card);
-  });
-}
-
-/* ============================================
-   2. NAVEGACIÓN Y FILTROS DEL PORTAFOLIO
-   ============================================ */
-(function initNavScroll() {
+function initNav() {
   const nav = document.getElementById('nav');
-  if (!nav) return;
-  window.addEventListener('scroll', () => nav.classList.toggle('nav--scrolled', window.scrollY > 20), { passive: true });
-})();
-
-(function initNavToggle() {
   const toggle = document.getElementById('navToggle');
   const menu = document.getElementById('navMenu');
-  if (!toggle || !menu) return;
+  if (!nav || !toggle || !menu) return;
+
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('nav--scrolled', window.scrollY > 20);
+  }, { passive: true });
 
   const closeMenu = () => {
     toggle.classList.remove('nav__toggle--active');
@@ -100,344 +48,490 @@ async function cargarProyectos() {
     }
   });
 
-  menu.querySelectorAll('.nav__link').forEach(l => l.addEventListener('click', closeMenu));
-})();
-
-(function initPortfolioFilter() {
-  const filters = document.querySelectorAll('.portfolio__filter');
-  const emptyMsg = document.getElementById('portfolioEmpty');
-
-  filters.forEach((filter) => {
-    filter.addEventListener('click', () => {
-      filters.forEach((f) => {
-        f.classList.remove('portfolio__filter--active');
-        f.setAttribute('aria-selected', 'false');
-      });
-
-      filter.classList.add('portfolio__filter--active');
-      filter.setAttribute('aria-selected', 'true');
-
-      const category = filter.dataset.filter;
-      const projects = document.querySelectorAll('.project');
-      let visibleCount = 0;
-
-      projects.forEach((project) => {
-        const projectCategory = project.dataset.category;
-        const shouldShow = category === 'all' || projectCategory === category;
-
-        if (shouldShow) {
-          project.classList.remove('is-hidden');
-          setTimeout(() => project.classList.remove('is-fading'), 10);
-          visibleCount++;
-        } else {
-          project.classList.add('is-fading');
-          setTimeout(() => project.classList.add('is-hidden'), 200);
-        }
-      });
-
-      if (emptyMsg) {
-        emptyMsg.classList.toggle('is-visible', visibleCount === 0);
-      }
-    });
-  });
-})();
+  menu.querySelectorAll('.nav__link').forEach((l) => l.addEventListener('click', closeMenu));
+  window.addEventListener('resize', () => { if (window.innerWidth > 768) closeMenu(); });
+}
 
 /* ============================================
-   3. CONTACT FORM (GUARDAR EN SUPABASE LEADS)
+   PROYECTOS
    ============================================ */
-(function initContactForm() {
+async function cargarProyectos() {
+  const grid = document.getElementById('portfolioGrid');
+  const emptyMsg = document.getElementById('portfolioEmpty');
+  const projectCountEl = document.getElementById('projectCount');
+  if (!grid) return;
+
+  const { data: proyectos, error } = await supabaseClient
+    .from('projects')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error cargando proyectos:', error);
+    if (emptyMsg) { emptyMsg.textContent = 'Error al cargar proyectos.'; emptyMsg.classList.add('is-visible'); }
+    return;
+  }
+
+  if (!proyectos || proyectos.length === 0) {
+    if (emptyMsg) emptyMsg.classList.add('is-visible');
+    if (projectCountEl) projectCountEl.textContent = '0';
+    return;
+  }
+
+  if (projectCountEl) projectCountEl.textContent = `+${proyectos.length}`;
+
+  grid.innerHTML = '';
+  proyectos.forEach((p, index) => {
+    const card = document.createElement('article');
+    card.className = 'project';
+    card.dataset.category = (p.category || '').toLowerCase().trim();
+
+    const visualClass = p.image_url
+      ? 'project__visual'
+      : `project__visual project__visual--gradient-${(index % 10) + 1}`;
+
+    const visualStyle = p.image_url ? `style="background-image: url('${p.image_url}');"` : '';
+
+    const categoryLabel = p.category
+      ? p.category.charAt(0).toUpperCase() + p.category.slice(1)
+      : 'Proyecto';
+
+    card.innerHTML = `
+      <div class="${visualClass}" ${visualStyle}>
+        <span class="project__scanline" aria-hidden="true"></span>
+        <span class="project__code">${p.project_number || 'PROYECTO #' + (index + 1)}</span>
+      </div>
+      <div class="project__info">
+        <span class="project__category">${categoryLabel}</span>
+        <h3 class="project__title">${p.title || 'Proyecto'}</h3>
+        <p class="project__desc">${p.description || 'Sitio web profesional.'}</p>
+        ${p.project_link ? `<a href="${p.project_link}" target="_blank" rel="noopener" class="project__link">Ver Proyecto →</a>` : ''}
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  initFilters();
+}
+
+/* Filtros de portafolio */
+function initFilters() {
+  const filterBtns = document.querySelectorAll('.portfolio__filter');
+  const cards = document.querySelectorAll('.project');
+  const emptyMsg = document.getElementById('portfolioEmpty');
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => {
+        b.classList.remove('portfolio__filter--active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      btn.classList.add('portfolio__filter--active');
+      btn.setAttribute('aria-selected', 'true');
+
+      const filter = btn.dataset.filter;
+      let visible = 0;
+
+      cards.forEach(card => {
+        const cat = card.dataset.category;
+        const show = filter === 'all' || cat === filter;
+        card.classList.toggle('is-hidden', !show);
+        if (show) visible++;
+      });
+
+      if (emptyMsg) emptyMsg.classList.toggle('is-visible', visible === 0);
+    });
+  });
+}
+
+/* ============================================
+   CALIFICACIONES
+   ============================================ */
+async function cargarCalificaciones() {
+  const list = document.getElementById('reviewsList');
+  const emptyEl = document.getElementById('reviewsEmpty');
+  const totalEl = document.getElementById('reviewsTotalCount');
+  const heroStars = document.getElementById('heroStars');
+  if (!list) return;
+
+  const { data: reviews, error } = await supabaseClient
+    .from('reviews')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error cargando calificaciones:', error);
+    if (emptyEl) emptyEl.textContent = 'Error al cargar calificaciones.';
+    return;
+  }
+
+  if (!reviews || reviews.length === 0) {
+    if (emptyEl) emptyEl.textContent = 'Aún no hay calificaciones. ¡Sé el primero!';
+    if (totalEl) totalEl.textContent = '0';
+    return;
+  }
+
+  if (totalEl) totalEl.textContent = reviews.length;
+
+  // Promedio de estrellas
+  if (heroStars) {
+    const avg = reviews.reduce((acc, r) => acc + (r.stars || 5), 0) / reviews.length;
+    const full = Math.round(avg);
+    heroStars.textContent = '★'.repeat(full) + '☆'.repeat(5 - full);
+  }
+
+  // Render
+  list.innerHTML = '';
+  if (emptyEl) emptyEl.style.display = 'none';
+
+  reviews.forEach(r => {
+    const stars = '★'.repeat(r.stars || 5) + '☆'.repeat(5 - (r.stars || 5));
+    const card = document.createElement('div');
+    card.className = 'review-card';
+    card.innerHTML = `
+      <div class="review-card__stars">${stars}</div>
+      <p class="review-card__text">"${r.text || ''}"</p>
+      <p class="review-card__author">— ${r.name || 'Cliente'}</p>
+    `;
+    list.appendChild(card);
+  });
+}
+
+/* ============================================
+   FORMULARIO DE REVIEW
+   ============================================ */
+function initReviewForm() {
+  const form = document.getElementById('reviewForm');
+  const starContainer = document.getElementById('starSelector');
+  if (!form || !starContainer) return;
+
+  const stars = starContainer.querySelectorAll('.star');
+  let rating = 5;
+
+  const paintStars = (val) => {
+    stars.forEach(s => {
+      const v = parseInt(s.dataset.val, 10);
+      s.classList.toggle('active', v <= val);
+    });
+  };
+  paintStars(rating);
+
+  stars.forEach(star => {
+    star.addEventListener('click', () => {
+      rating = parseInt(star.dataset.val, 10);
+      paintStars(rating);
+    });
+    star.addEventListener('mouseenter', () => paintStars(parseInt(star.dataset.val, 10)));
+  });
+
+  starContainer.addEventListener('mouseleave', () => paintStars(rating));
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('revName').value.trim();
+    const text = document.getElementById('revText').value.trim();
+    if (!name || !text) return;
+
+    const btn = form.querySelector('button[type="submit"]');
+    const original = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Publicando...';
+
+    const { error } = await supabaseClient
+      .from('reviews')
+      .insert([{ name, text, stars: rating }]);
+
+    if (error) {
+      console.error(error);
+      alert('No se pudo publicar la calificación. Intente de nuevo.');
+      btn.disabled = false;
+      btn.textContent = original;
+      return;
+    }
+
+    form.reset();
+    rating = 5;
+    paintStars(5);
+    btn.disabled = false;
+    btn.textContent = original;
+    alert('¡Gracias por su calificación!');
+    cargarCalificaciones();
+  });
+}
+
+/* ============================================
+   FORMULARIO DE CONTACTO
+   ============================================ */
+function initContactForm() {
   const form = document.getElementById('contactForm');
   if (!form) return;
-  const WHATSAPP_NUMBER = '50689413632';
 
-  document.querySelectorAll('.plan-card__cta').forEach((btn) => {
+  const submitBtn = document.getElementById('submitBtn');
+  const submitText = document.getElementById('submitText');
+
+  // Pre-llenar el campo "Proyecto" si el usuario hizo click en "Quiero este plan"
+  document.querySelectorAll('.plan-card__cta').forEach(btn => {
     btn.addEventListener('click', () => {
       const plan = btn.dataset.plan;
-      const projectField = document.getElementById('fieldProyecto');
-      if (projectField && plan) projectField.value = `Interesado en Plan ${plan}`;
+      const field = document.getElementById('fieldProyecto');
+      if (field && plan) field.value = `Interesado en Plan ${plan}`;
     });
   });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (!form.checkValidity()) { form.reportValidity(); return; }
 
-    const nuevoLead = {
-      nombre: form.nombre.value.trim(),
-      correo: form.correo.value.trim(),
-      whatsapp: form.whatsapp.value.trim(),
-      negocio: form.negocio.value,
-      proyecto: form.proyecto.value.trim() || 'Ninguno',
-      mensaje: form.mensaje.value.trim(),
-      status: 'pendiente'
+    const data = {
+      nombre: document.getElementById('fieldNombre').value.trim(),
+      correo: document.getElementById('fieldCorreo').value.trim(),
+      whatsapp: document.getElementById('fieldWhatsapp').value.trim(),
+      negocio: document.getElementById('fieldNegocio').value,
+      proyecto: document.getElementById('fieldProyecto').value.trim() || 'No especificado',
+      mensaje: document.getElementById('fieldMensaje').value.trim()
     };
 
-    const { error } = await supabase.from('leads').insert([nuevoLead]);
-    
+    if (submitBtn && submitText) {
+      submitBtn.disabled = true;
+      submitText.textContent = 'ENVIANDO...';
+    }
+
+    // 1. Guardar en Supabase
+    const { error } = await supabaseClient.from('leads').insert([{
+      nombre: data.nombre,
+      correo: data.correo,
+      whatsapp: data.whatsapp,
+      negocio: data.negocio,
+      proyecto: data.proyecto,
+      mensaje: data.mensaje,
+      status: 'pendiente'
+    }]);
+
     if (error) {
-      alert('Hubo un error al enviar el mensaje. Intente de nuevo.');
-      console.error(error);
+      console.error('Error al guardar lead:', error);
+      alert('Hubo un error al registrar su solicitud. Intente de nuevo.');
+      if (submitBtn && submitText) {
+        submitBtn.disabled = false;
+        submitText.textContent = 'INICIAR PROYECTO';
+      }
       return;
     }
 
-    const mensaje = `¡Hola Andrés! Quiero iniciar un proyecto web.%0A%0A*Nombre:* ${encodeURIComponent(nuevoLead.nombre)}%0A*Negocio:* ${encodeURIComponent(nuevoLead.negocio)}%0A*Mensaje:*%0A${encodeURIComponent(nuevoLead.mensaje)}`;
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${mensaje}`, '_blank');
+    // 2. Abrir WhatsApp con mensaje prellenado
+    const textoWp =
+      `¡Hola! Quiero iniciar un proyecto web.\n\n` +
+      `*Nombre:* ${data.nombre}\n` +
+      `*Correo:* ${data.correo}\n` +
+      `*WhatsApp:* ${data.whatsapp}\n` +
+      `*Tipo de negocio:* ${data.negocio}\n` +
+      `*Proyecto de interés:* ${data.proyecto}\n\n` +
+      `*Mensaje:*\n${data.mensaje}`;
+
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(textoWp)}`, '_blank');
 
     form.reset();
-    alert('¡Proyecto enviado con éxito!');
-  });
-})();
-
-/* ============================================
-   4. CALIFICACIONES (MÁXIMO 4 VISIBLES)
-   ============================================ */
-async function cargarCalificaciones() {
-  const reviewsList = document.getElementById('reviewsList');
-  const heroStars = document.getElementById('heroStars');
-  const reviewsTotalCount = document.getElementById('reviewsTotalCount');
-  const reviewsEmpty = document.getElementById('reviewsEmpty');
-  if (!reviewsList) return;
-
-  const { data: reviews, error } = await supabase
-    .from('reviews')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) return;
-
-  if (reviewsTotalCount) reviewsTotalCount.textContent = reviews.length;
-  reviewsList.innerHTML = '';
-
-  if (!reviews || reviews.length === 0) {
-    if (reviewsEmpty) reviewsEmpty.style.display = 'block';
-    reviewsList.innerHTML = `<p class="reviews__empty">Sea el primero en dejar una calificación.</p>`;
-    return;
-  }
-
-  let total = 5; 
-  let count = 1;
-  reviews.forEach(r => { total += r.stars; count++; });
-  const avg = Math.round(total / count);
-  if (heroStars) heroStars.textContent = '★'.repeat(avg) + '☆'.repeat(5 - avg);
-
-  reviews.slice(0, 4).forEach(r => {
-    const el = document.createElement('div');
-    el.className = 'review-card';
-    el.innerHTML = `
-      <div class="review-card__header">
-         <span class="review-card__name">${r.name}</span>
-         <span class="review-card__stars">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</span>
-      </div>
-      <p class="review-card__text">${r.text}</p>
-    `;
-    reviewsList.appendChild(el);
-  });
-}
-
-const reviewForm = document.getElementById('reviewForm');
-if (reviewForm) {
-  let currentRating = 5;
-  document.querySelectorAll('#starSelector .star').forEach(star => {
-    star.addEventListener('click', (e) => {
-      currentRating = parseInt(e.target.dataset.val);
-      document.querySelectorAll('#starSelector .star').forEach(s => {
-        if (parseInt(s.dataset.val) <= currentRating) s.classList.add('active');
-        else s.classList.remove('active');
-      });
-    });
-  });
-
-  reviewForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const newRev = {
-      name: document.getElementById('revName').value.trim(),
-      text: document.getElementById('revText').value.trim(),
-      stars: currentRating
-    };
-
-    const { error } = await supabase.from('reviews').insert([newRev]);
-    if (!error) {
-      reviewForm.reset();
-      cargarCalificaciones();
-      alert('¡Gracias por su calificación!');
+    if (submitBtn && submitText) {
+      submitBtn.disabled = false;
+      submitText.textContent = 'INICIAR PROYECTO';
     }
   });
 }
 
 /* ============================================
-   5. PANEL DE ADMINISTRADOR (SUPABASE AUTH)
+   PANEL DE ADMINISTRACIÓN
    ============================================ */
-(function initAdminPanel() {
+function initAdminPanel() {
   const btnAdmin = document.getElementById('btnAdmin');
-  const adminModal = document.getElementById('adminModal');
-  const closeAdminBtn = document.getElementById('closeAdminBtn');
-  const adminLoginView = document.getElementById('adminLoginView');
-  const adminDashboardView = document.getElementById('adminDashboardView');
-  const adminLoginForm = document.getElementById('adminLoginForm');
-  const btnLogoutAdmin = document.getElementById('btnLogoutAdmin');
-  const btnForgotPass = document.getElementById('btnForgotPass');
-  const adminLoggedUser = document.getElementById('adminLoggedUser');
+  const modal = document.getElementById('adminModal');
+  const closeBtn = document.getElementById('closeAdminBtn');
+  const loginView = document.getElementById('adminLoginView');
+  const dashboardView = document.getElementById('adminDashboardView');
+  const loginForm = document.getElementById('adminLoginForm');
+  const loggedUser = document.getElementById('adminLoggedUser');
+  const btnLogout = document.getElementById('btnLogoutAdmin');
+  const btnForgot = document.getElementById('btnForgotPass');
+  const tabs = document.querySelectorAll('.admin-tab');
+  const sectionPend = document.getElementById('sectionPendientes');
+  const sectionTerm = document.getElementById('sectionTerminados');
 
-  const adminLeadsContainer = document.getElementById('adminLeadsContainer');
-  const adminCompletedContainer = document.getElementById('adminCompletedContainer');
-  const adminTabs = document.querySelectorAll('.admin-tab');
-  const sectionPendientes = document.getElementById('sectionPendientes');
-  const sectionTerminados = document.getElementById('sectionTerminados');
+  if (!btnAdmin || !modal) return;
 
-  if (!btnAdmin || !adminModal) return;
+  const openModal = () => { modal.classList.add('is-open'); document.body.style.overflow = 'hidden'; };
+  const closeModal = () => { modal.classList.remove('is-open'); document.body.style.overflow = ''; };
 
   btnAdmin.addEventListener('click', async (e) => {
     e.preventDefault();
-    adminModal.classList.add('is-active');
-    document.body.style.overflow = 'hidden';
-
-    const { data: { session } } = await supabase.auth.getSession();
+    openModal();
+    // Verificar sesión activa
+    const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) {
-      mostrarDashboard(session.user.email);
+      loginView.style.display = 'none';
+      dashboardView.style.display = 'block';
+      loggedUser.textContent = `Sesión: ${session.user.email}`;
+      cargarLeads();
     } else {
-      mostrarLogin();
+      loginView.style.display = 'block';
+      dashboardView.style.display = 'none';
     }
   });
 
-  closeAdminBtn.addEventListener('click', () => {
-    adminModal.classList.remove('is-active');
-    document.body.style.overflow = '';
+  closeBtn.addEventListener('click', closeModal);
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
   });
 
-  function mostrarLogin() {
-    adminLoginView.style.display = 'block';
-    adminDashboardView.style.display = 'none';
-  }
-
-  async function mostrarDashboard(email) {
-    adminLoginView.style.display = 'none';
-    adminDashboardView.style.display = 'block';
-    adminLoggedUser.textContent = `Conectado como: ${email}`;
-    await cargarDatosAdmin();
-  }
-
-  adminLoginForm.addEventListener('submit', async (e) => {
+  loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const email = document.getElementById('adminEmail').value.trim();
-    const password = document.getElementById('adminPassword').value.trim();
+    const email = document.getElementById('adminEmail').value;
+    const password = document.getElementById('adminPassword').value;
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
     if (error) {
-      alert("Credenciales incorrectas. Verifique su correo y contraseña.");
+      alert('Credenciales incorrectas: ' + error.message);
       return;
     }
 
-    mostrarDashboard(data.user.email);
-    adminLoginForm.reset();
+    loginView.style.display = 'none';
+    dashboardView.style.display = 'block';
+    loggedUser.textContent = `Sesión: ${data.user.email}`;
+    cargarLeads();
   });
 
-  btnForgotPass.addEventListener('click', async () => {
-    const email = prompt("Ingrese su correo electrónico registrado para recuperar la contraseña:");
-    if (!email) return;
+  btnLogout.addEventListener('click', async () => {
+    await supabaseClient.auth.signOut();
+    loginView.style.display = 'block';
+    dashboardView.style.display = 'none';
+    document.getElementById('adminLoginForm').reset();
+  });
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.href,
+  if (btnForgot) {
+    btnForgot.addEventListener('click', async () => {
+      const email = document.getElementById('adminEmail').value.trim();
+      if (!email) { alert('Escriba su correo primero.'); return; }
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(email);
+      if (error) alert('Error: ' + error.message);
+      else alert('Se envió un enlace de recuperación a su correo.');
     });
+  }
 
-    if (error) {
-      alert("Error al enviar el correo: " + error.message);
-    } else {
-      alert("¡Correo enviado! Revisa tu bandeja de entrada para cambiar tu contraseña.");
-    }
-  });
-
-  btnLogoutAdmin.addEventListener('click', async () => {
-    await supabase.auth.signOut();
-    mostrarLogin();
-  });
-
-  adminTabs.forEach(tab => {
+  // Tabs
+  tabs.forEach(tab => {
     tab.addEventListener('click', () => {
-      adminTabs.forEach(t => t.classList.remove('active'));
+      tabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
-
       const target = tab.dataset.target;
-      if (target === 'pendientes') {
-        sectionPendientes.style.display = 'block';
-        sectionTerminados.style.display = 'none';
-      } else {
-        sectionPendientes.style.display = 'none';
-        sectionTerminados.style.display = 'block';
+      sectionPend.style.display = target === 'pendientes' ? 'block' : 'none';
+      sectionTerm.style.display = target === 'terminados' ? 'block' : 'none';
+    });
+  });
+}
+
+async function cargarLeads() {
+  const pendContainer = document.getElementById('adminLeadsContainer');
+  const termContainer = document.getElementById('adminCompletedContainer');
+  if (!pendContainer || !termContainer) return;
+
+  const { data: leads, error } = await supabaseClient
+    .from('leads')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error cargando leads:', error);
+    return;
+  }
+
+  const pendientes = leads.filter(l => l.status !== 'terminado');
+  const terminados = leads.filter(l => l.status === 'terminado');
+
+  pendContainer.innerHTML = pendientes.length
+    ? pendientes.map(renderLeadCard).join('')
+    : '<p style="color: var(--color-text-muted); text-align:center; padding: 20px;">No hay leads pendientes.</p>';
+
+  termContainer.innerHTML = terminados.length
+    ? terminados.map(renderLeadCard).join('')
+    : '<p style="color: var(--color-text-muted); text-align:center; padding: 20px;">Aún no hay leads terminados.</p>';
+
+  // Eventos
+  document.querySelectorAll('[data-action="complete"]').forEach(b => {
+    b.addEventListener('click', () => actualizarLead(b.dataset.id, 'terminado'));
+  });
+  document.querySelectorAll('[data-action="reopen"]').forEach(b => {
+    b.addEventListener('click', () => actualizarLead(b.dataset.id, 'pendiente'));
+  });
+  document.querySelectorAll('[data-action="delete"]').forEach(b => {
+    b.addEventListener('click', () => eliminarLead(b.dataset.id));
+  });
+}
+
+function renderLeadCard(lead) {
+  const fecha = new Date(lead.created_at).toLocaleDateString('es-CR', {
+    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+  });
+
+  const isDone = lead.status === 'terminado';
+
+  return `
+    <div class="lead-card">
+      <div class="lead-card__header">
+        <span class="lead-card__name">${lead.nombre || 'Sin nombre'}</span>
+        <span class="lead-card__badge">${isDone ? 'Terminado' : 'Pendiente'}</span>
+      </div>
+      <p class="lead-card__meta">
+        📱 ${lead.whatsapp || '—'} &nbsp;|&nbsp; ✉️ ${lead.correo || '—'}<br>
+        🏢 ${lead.negocio || '—'} &nbsp;|&nbsp; 🎯 ${lead.proyecto || '—'}<br>
+        📅 ${fecha}
+      </p>
+      <p class="lead-card__message">${lead.mensaje || ''}</p>
+      <div class="lead-card__actions">
+        ${!isDone
+          ? `<button class="lead-card__btn lead-card__btn--done" data-action="complete" data-id="${lead.id}">✓ Marcar terminado</button>`
+          : `<button class="lead-card__btn" data-action="reopen" data-id="${lead.id}">↺ Reabrir</button>`}
+        <a class="lead-card__btn" href="https://wa.me/${(lead.whatsapp || '').replace(/\D/g, '')}" target="_blank" rel="noopener">💬 WhatsApp</a>
+        <button class="lead-card__btn lead-card__btn--delete" data-action="delete" data-id="${lead.id}">🗑 Eliminar</button>
+      </div>
+    </div>
+  `;
+}
+
+async function actualizarLead(id, status) {
+  const { error } = await supabaseClient.from('leads').update({ status }).eq('id', id);
+  if (error) { alert('Error al actualizar'); return; }
+  cargarLeads();
+}
+
+async function eliminarLead(id) {
+  if (!confirm('¿Eliminar este lead definitivamente?')) return;
+  const { error } = await supabaseClient.from('leads').delete().eq('id', id);
+  if (error) { alert('Error al eliminar'); return; }
+  cargarLeads();
+}
+
+/* ============================================
+   REVEAL ON SCROLL
+   ============================================ */
+function initRevealOnScroll() {
+  if (!('IntersectionObserver' in window)) return;
+  const elements = document.querySelectorAll(
+    '.process-step, .plan-card, .storage-card, .project, .section-head, .storage__head, .review-card'
+  );
+  if (!elements.length) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+        observer.unobserve(entry.target);
       }
     });
+  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+
+  elements.forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(24px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(el);
   });
-
-  async function cargarDatosAdmin() {
-    await cargarPendientes();
-    await cargarTerminados();
-  }
-
-  async function cargarPendientes() {
-    const { data: leads, error } = await supabase
-      .from('leads')
-      .select('*')
-      .eq('status', 'pendiente')
-      .order('created_at', { ascending: false });
-
-    if (error || !leads || leads.length === 0) {
-      adminLeadsContainer.innerHTML = `<p style="color:var(--color-text-muted); text-align:center; padding: 20px;">No hay proyectos pendientes.</p>`;
-      return;
-    }
-
-    adminLeadsContainer.innerHTML = '';
-    leads.forEach((lead) => {
-      const card = document.createElement('div');
-      card.className = 'admin-lead';
-      card.innerHTML = `
-        <p><strong>Cliente:</strong> ${lead.nombre}</p>
-        <p><strong>WhatsApp:</strong> <a href="https://wa.me/${lead.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:var(--color-neon-cyan);">${lead.whatsapp}</a></p>
-        <p><strong>Negocio:</strong> ${lead.negocio} | <strong>Ref:</strong> ${lead.proyecto}</p>
-        <p><strong>Mensaje:</strong> ${lead.mensaje}</p>
-        <button class="btn btn--primary" style="margin-top: 10px; font-size: 0.7rem; padding: 6px 12px;" onclick="actualizarEstado('${lead.id}', 'terminado')">✓ Marcar como Terminado</button>
-      `;
-      adminLeadsContainer.appendChild(card);
-    });
-  }
-
-  async function cargarTerminados() {
-    const { data: leads, error } = await supabase
-      .from('leads')
-      .select('*')
-      .eq('status', 'terminado')
-      .order('created_at', { ascending: false });
-
-    if (error || !leads || leads.length === 0) {
-      adminCompletedContainer.innerHTML = `<p style="color:var(--color-text-muted); text-align:center; padding: 20px;">No hay proyectos terminados todavía.</p>`;
-      return;
-    }
-
-    adminCompletedContainer.innerHTML = '';
-    leads.forEach((lead) => {
-      const card = document.createElement('div');
-      card.className = 'admin-lead';
-      card.style.borderLeftColor = '#27c93f';
-      card.innerHTML = `
-        <p><strong>Cliente:</strong> ${lead.nombre}</p>
-        <p><strong>WhatsApp:</strong> <a href="https://wa.me/${lead.whatsapp.replace(/\D/g,'')}" target="_blank" style="color:var(--color-neon-cyan);">${lead.whatsapp}</a></p>
-        <p><strong>Negocio:</strong> ${lead.negocio} | <strong>Ref:</strong> ${lead.proyecto}</p>
-        <p><strong>Mensaje:</strong> ${lead.mensaje}</p>
-        <button class="btn btn--outline" style="margin-top: 10px; font-size: 0.7rem; padding: 6px 12px; border-color: var(--color-neon-cyan); color: var(--color-neon-cyan);" onclick="actualizarEstado('${lead.id}', 'pendiente')">↺ Reabrir Proyecto</button>
-      `;
-      adminCompletedContainer.appendChild(card);
-    });
-  }
-
-  window.actualizarEstado = async function(id, nuevoEstado) {
-    const { error } = await supabase
-      .from('leads')
-      .update({ status: nuevoEstado })
-      .eq('id', id);
-
-    if (!error) {
-      cargarDatosAdmin();
-    } else {
-      alert('Error al actualizar el estado.');
-    }
-  };
-})();
+}
