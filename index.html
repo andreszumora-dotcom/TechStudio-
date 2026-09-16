@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="TECHSTUDIO - Páginas web rápidas, seguras y fáciles de administrar para su negocio.">
+  <title>TECHSTUDIO | Páginas Web Profesionales</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Librería de Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ============ NAV ============ -->
+  <header class="nav" id="nav">
+    <div class="nav__container">
+      <a href="#hero" class="nav__logo" aria-label="Ir al inicio">
+        <span class="nav__logo-mark">◆</span>
+        <span class="nav__logo-text">TECHSTUDIO</span>
+      </a>
+      <button class="nav__toggle" id="navToggle" aria-label="Abrir menú">
+        <span class="nav__toggle-bar"></span>
+        <span class="nav__toggle-bar"></span>
+        <span class="nav__toggle-bar"></span>
+      </button>
+      <nav class="nav__menu" id="navMenu" aria-label="Navegación principal">
+        <ul class="nav__list">
+          <li class="nav__item"><a href="#proceso" class="nav__link">Cómo Trabajo</a></li>
+          <li class="nav__item"><a href="#planes" class="nav__link">Paquetes</a></li>
+          <li class="nav__item"><a href="#proyectos" class="nav__link">Proyectos</a></li>
+          <li class="nav__item"><a href="#calificaciones" class="nav__link">Calificaciones</a></li>
+          <li class="nav__item"><a href="#contacto" class="nav__link nav__link--cta">Cotizar</a></li>
+          <li class="nav__item"><a href="#" id="btnAdmin" class="nav__link nav__link--admin">Administrador</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ============ HERO ============ -->
+    <section class="hero" id="hero">
+      <div class="hero__grid-bg" aria-hidden="true"></div>
+      <div class="hero__container">
+        <div class="hero__content">
+          <h1 class="hero__title">
+            Páginas web que transforman negocios.
+          </h1>
+
+          <p class="hero__text hero__text--highlight">
+            Hola, me presento, soy <span class="hero__text-strong">Andrés Zúñiga</span>, estudiante de ingeniería en el Tecnológico de Costa Rica.
+          </p>
+
+          <p class="hero__text">
+            He notado que muchas veces una página puede cambiar el curso de un negocio. Ya sea en situaciones como mostrar menús, atender pedidos o hacer reservaciones, tareas que con una página web se puede volver más fáciles, menos tediosas y mas eficientes. 
+          </p>
+
+          <p class="hero__text">
+            Así que lo invito a ver los paquetes disponibles y las páginas modelo que ya he creado, para que explore cuál de todos ellos se adapta mejor a su negocio.
+          </p>
+
+          <div class="hero__actions">
+            <a href="#planes" class="btn btn--primary">
+              <span>Ver Paquetes</span>
+              <svg class="btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </a>
+            <a href="#contacto" class="btn btn--outline">Cotizar mi Proyecto</a>
+          </div>
+
+          <ul class="hero__stats">
+            <li class="hero__stat"><strong class="hero__stat-value" id="projectCount">0</strong><span class="hero__stat-label">Proyectos</span></li>
+            <li class="hero__stat"><strong class="hero__stat-value hero__stars-display" id="heroStars">★★★★★</strong><span class="hero__stat-label">Calificación</span></li>
+            <li class="hero__stat"><strong class="hero__stat-value">24/7</strong><span class="hero__stat-label" style="text-transform: none; font-size: 0.75rem;">Tiempo de respuesta de 9am a 9am<br>los 7 dias de la semana</span></li>
+          </ul>
+        </div>
+
+        <div class="hero__visual-wrapper">
+          <div class="hero__visual">
+            <div class="hero__frame">
+              <div class="hero__frame-inner">
+                <img src="yo.png" alt="Foto profesional de Andrés Zúñiga" class="hero__photo" loading="eager">
+              </div>
+              <span class="hero__frame-corner hero__frame-corner--tl" aria-hidden="true"></span>
+              <span class="hero__frame-corner hero__frame-corner--tr" aria-hidden="true"></span>
+              <span class="hero__frame-corner hero__frame-corner--bl" aria-hidden="true"></span>
+              <span class="hero__frame-corner hero__frame-corner--br" aria-hidden="true"></span>
+            </div>
+            <div class="hero__badge">
+              <span class="hero__badge-dot"></span>
+              Disponible para proyectos
+            </div>
+          </div>
+          
+          <div class="hero__social-under">
+             <a href="https://wa.me/50689413632" target="_blank" class="social-btn social-btn--wa">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                <span>8941-3632</span>
+             </a>
+             <a href="https://instagram.com/andresz819" target="_blank" class="social-btn social-btn--ig">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                <span>@andresz819</span>
+             </a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ PROCESO ============ -->
+    <section class="process" id="proceso">
+      <div class="section-head">
+        <span class="section-head__tag">// Proceso</span>
+        <h2 class="section-head__title">¿Cómo vamos a trabajar?</h2>
+        <p class="section-head__text">Cuatro pasos simples. Cero complicaciones. Usted se enfoca en su negocio, yo me encargo de la tecnología.</p>
+      </div>
+
+      <div class="process__grid">
+        <article class="process-step">
+          <div class="process-step__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </div>
+          <span class="process-step__number">01</span>
+          <h3 class="process-step__title">Conversamos</h3>
+          <p class="process-step__text">Primero quiero saber sobre su negocio: qué productos ofrece, a qué precio ofrece esos productos y cuál es el diseño que le interesa para su página.</p>
+        </article>
+        <article class="process-step">
+          <div class="process-step__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+          </div>
+          <span class="process-step__number">02</span>
+          <h3 class="process-step__title">Diseño la plantilla</h3>
+          <p class="process-step__text">Una vez que pasemos el paso 1, yo creo la plantilla de su página web y se la envío para que usted la pueda revisar. Cuando tenga su aprobación, continuamos.</p>
+        </article>
+        <article class="process-step">
+          <div class="process-step__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          </div>
+          <span class="process-step__number">03</span>
+          <h3 class="process-step__title">Doy vida al diseño</h3>
+          <p class="process-step__text">Me encargo de darle vida a la plantilla: agregarle las imágenes, detalles, textos, información general, entre otras cosas, para que todo quede funcional.</p>
+        </article>
+        <article class="process-step">
+          <div class="process-step__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg>
+          </div>
+          <span class="process-step__number">04</span>
+          <h3 class="process-step__title">Publicamos en internet</h3>
+          <p class="process-step__text">Publicamos la página en internet, ya sea con el dominio predeterminado (que es <strong>.github.io</strong>) o podemos agregarle uno más profesional, como <strong>.com</strong> o <strong>.org</strong>.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============ PLANES ============ -->
+    <section class="pricing" id="planes">
+      <div class="section-head">
+        <span class="section-head__tag">// Paquetes</span>
+        <h2 class="section-head__title">Planes disponibles</h2>
+        <p class="section-head__text">Elija el plan que mejor se ajuste a su negocio hoy. Todos incluyen acompañamiento personal de principio a fin.</p>
+      </div>
+      <div class="pricing__grid">
+        <article class="plan-card">
+          <div class="plan-card__glow" aria-hidden="true"></div>
+          <header class="plan-card__header">
+            <span class="plan-card__tag">Plan</span>
+            <h3 class="plan-card__title">Básico</h3>
+            <p class="plan-card__price"><span class="plan-card__currency">₡</span>20.000</p>
+            <p class="plan-card__subtitle">Es como una tarjeta de presentación, pero en internet. Perfecta si apenas está empezando.</p>
+          </header>
+          <ul class="plan-card__features">
+            <li class="plan-card__feature"><span class="plan-card__check">✓</span> Hasta 25 fotos o videos</li>
+            <li class="plan-card__feature"><span class="plan-card__check">✓</span> Se ve bien en celulares y computadoras</li>
+            <li class="plan-card__feature"><span class="plan-card__check">✓</span> Abre rápido, sin esperas</li>
+            <li class="plan-card__feature"><span class="plan-card__check">✓</span> Botón directo para escribirle por WhatsApp</li>
+            <li class="plan-card__feature"><span class="plan-card__check">✓</span> Preparada para que la gente la encuentre en Google</li>
+          </ul>
+          <a href="#contacto" class="btn btn--outline plan-card__cta" data-plan="Básico">Quiero este plan</a>
+        </article>
+        <article class="plan-card plan-card--featured">
+          <div class="plan-card__glow" aria-hidden="true"></div>
+          <span class="plan-card__ribbon">Más Elegido</span>
+          <header class="plan-card__header">
+            <span class="plan-card__tag">Plan</span>
+            <h3 class="plan-card__title">Profesional</h3>
+            <p class="plan-card__price"><span class="plan-card__currency">₡</span>40.000</p>
+            <p class="plan-card__subtitle">Una página completa, con varias secciones y todo lo necesario para crecer.</p>
+          </header>
+          <ul class="plan-card__features">
+            <li class="plan-card__feature"><span class="plan-card__check">✓</span> Hasta 50 fotos o videos</li>
+            <li class="plan-card__feature"><span class="plan-card__check">✓</span> Incluye todo lo del plan Básico</li>
+            <li class="plan-card__feature"><span class="plan-card__check">✓</span> Menú con varias secciones bien organizadas</li>
+            <li class="plan-card__feature"><span class="plan-card__check">✓</span> Animaciones modernas y elegantes</li>
+            <li class="plan-card__feature"><span class="plan-card__check">✓</span> Mapa para que sus clientes lleguen fácil</li>
+            <li class="plan-card__feature"><span class="plan-card__check">✓</span> Candado de seguridad (los datos viajan protegidos)</li>
+          </ul>
+          <a href="#contacto" class="btn btn--primary plan-card__cta" data-plan="Profesional">Quiero este plan</a>
+        </article>
+        <article class="plan-card">
+          <div class="plan-card__glow" aria-hidden="true"></div>
+          <header class="plan-card__header">
+            <span class="plan-card__tag">Plan</span>
+            <h3 class="plan-card__title">Avanzado</h3>
+            <p class="plan-card__price"><span class="plan-card__currency">₡</span>70.000</p>
+            <p class="plan-card__subtitle">Un sistema inteligente con panel de control. Usted mismo actualiza su página.</p>
+          </header>
+          <ul class="plan-card__features">
+            <li class="plan-card__feature"><span class="plan-card__check">✓</span> Incluye todo lo del plan Profesional</li>
+            <li class="plan-card__feature"><span class="plan-card__check">✓</span> Panel de control solo para usted</li>
+            <li class="plan-card__feature"><span class="plan-card__check">✓</span> Cambie textos, fotos y precios usted mismo</li>
+            <li class="plan-card__feature"><span class="plan-card__check">✓</span> Sin necesidad de saber programar</li>
+            <li class="plan-card__feature"><span class="plan-card__check">✓</span> Sus clientes pueden crear usuario y contraseña</li>
+            <li class="plan-card__feature"><span class="plan-card__check">✓</span> Toda la información guardada de forma segura</li>
+          </ul>
+          <a href="#contacto" class="btn btn--outline plan-card__cta" data-plan="Avanzado">Quiero este plan</a>
+        </article>
+      </div>
+      <div class="pricing__notes">
+        <div class="pricing__note" role="note">
+          <span class="pricing__note-prompt">$</span>
+          <p class="pricing__note-text">
+            <strong>Nota sobre el dominio:</strong> El dominio es el nombre de su página en internet (por ejemplo: <em>minegocio.com</em>). El dominio predeterminado <strong>.github.io</strong> es gratis. Si desea uno más profesional como <strong>.com</strong> o <strong>.org</strong>, el costo aproximado es de <strong>₡10.000 a ₡15.000 al año</strong>. Se paga aparte.
+          </p>
+        </div>
+        <div class="pricing__note" role="note">
+          <span class="pricing__note-prompt">$</span>
+          <p class="pricing__note-text">
+            <strong>Nota sobre el alojamiento de datos:</strong> Si su página guarda información de clientes (usuarios, pedidos, reservas), se necesita un servicio de almacenamiento. Trabajo con <strong>Supabase</strong>, que tiene opciones gratuitas y de pago. Los detalles y precios están abajo.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SUPABASE / ALMACENAMIENTO ============ -->
+    <section class="storage" id="almacenamiento">
+      <div class="storage__head">
+        <span class="section-head__tag">// Almacenamiento</span>
+        <h2 class="storage__head-title">Opciones de almacenamiento en la nube</h2>
+        <p class="storage__head-text">Trabajo con <strong>Supabase</strong>, un servicio seguro para guardar los datos de su página. Aquí le explico en palabras simples qué opciones hay y para qué tipo de negocio sirve cada una.</p>
+      </div>
+      <div class="storage__grid">
+        <article class="storage-card">
+          <span class="storage-card__badge">Gratis</span>
+          <h3 class="storage-card__title">Supabase Free</h3>
+          <p class="storage-card__price">₡0 <small>/ mes</small></p>
+          <p class="storage-card__desc">Ideal para probar y para páginas que apenas están empezando.</p>
+          <ul class="storage-card__list">
+            <li class="storage-card__item">500 MB de espacio en base de datos</li>
+            <li class="storage-card__item">1 GB para archivos y fotos</li>
+            <li class="storage-card__item">Hasta 50.000 usuarios registrados</li>
+            <li class="storage-card__item">Se "duerme" si nadie la usa en 1 semana</li>
+          </ul>
+        </article>
+        <article class="storage-card">
+          <span class="storage-card__badge">Recomendado</span>
+          <h3 class="storage-card__title">Supabase Pro</h3>
+          <p class="storage-card__price">≈ ₡13.000 <small>/ mes</small></p>
+          <p class="storage-card__desc">Para negocios que ya están creciendo y necesitan estabilidad.</p>
+          <ul class="storage-card__list">
+            <li class="storage-card__item">8 GB de base de datos</li>
+            <li class="storage-card__item">100 GB para archivos y fotos</li>
+            <li class="storage-card__item">Hasta 100.000 usuarios registrados</li>
+            <li class="storage-card__item">Nunca se duerme, siempre disponible</li>
+            <li class="storage-card__item">Copias de seguridad automáticas</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============ PROYECTOS ============ -->
+    <section class="portfolio" id="proyectos">
+      <div class="section-head">
+        <span class="section-head__tag">// Portafolio</span>
+        <h2 class="section-head__title">Proyectos reales, resultados reales</h2>
+        <p class="section-head__text">Explore por categoría. Cada proyecto se carga desde la base de datos.</p>
+      </div>
+
+      <div class="portfolio__filters" role="tablist" aria-label="Filtros de proyectos">
+        <button class="portfolio__filter portfolio__filter--active" data-filter="all" role="tab" aria-selected="true">Todos</button>
+        <button class="portfolio__filter" data-filter="restaurantes" role="tab" aria-selected="false">Restaurantes</button>
+        <button class="portfolio__filter" data-filter="turismo" role="tab" aria-selected="false">Turismo</button>
+        <button class="portfolio__filter" data-filter="salones" role="tab" aria-selected="false">Salones de Belleza</button>
+        <button class="portfolio__filter" data-filter="hoteles" role="tab" aria-selected="false">Hoteles</button>
+        <button class="portfolio__filter" data-filter="tiendas" role="tab" aria-selected="false">Tiendas</button>
+        <button class="portfolio__filter" data-filter="ventas" role="tab" aria-selected="false">Ventas Online</button>
+        <button class="portfolio__filter" data-filter="bienes-raices" role="tab" aria-selected="false">Bienes Raíces</button>
+        <button class="portfolio__filter" data-filter="clinicas" role="tab" aria-selected="false">Clínicas</button>
+        <button class="portfolio__filter" data-filter="gimnasios" role="tab" aria-selected="false">Gimnasios</button>
+        <button class="portfolio__filter" data-filter="ferreterias" role="tab" aria-selected="false">Ferreterías</button>
+        <button class="portfolio__filter" data-filter="veterinarias" role="tab" aria-selected="false">Veterinarias</button>
+        <button class="portfolio__filter" data-filter="talleres" role="tab" aria-selected="false">Talleres Mecánicos</button>
+        <button class="portfolio__filter" data-filter="hoteles-perros" role="tab" aria-selected="false">Hoteles para Perros</button>
+        <button class="portfolio__filter" data-filter="mantenimiento" role="tab" aria-selected="false">Mantenimiento y Limpieza</button>
+        <button class="portfolio__filter" data-filter="fotografos" role="tab" aria-selected="false">Fotógrafos</button>
+        <button class="portfolio__filter" data-filter="academias" role="tab" aria-selected="false">Academias</button>
+        <button class="portfolio__filter" data-filter="invitaciones" role="tab" aria-selected="false">Tarjetas de Invitación</button>
+      </div>
+
+      <div class="portfolio__grid" id="portfolioGrid"></div>
+      <p class="portfolio__empty" id="portfolioEmpty">Pronto se subirán nuevos proyectos.</p>
+    </section>
+
+    <!-- ============ CALIFICACIONES ============ -->
+    <section class="reviews" id="calificaciones">
+      <div class="section-head">
+        <span class="section-head__tag">// Testimonios</span>
+        <h2 class="section-head__title">¿Qué dicen los clientes?</h2>
+        <p class="section-head__text">La confianza se construye con resultados. Deje su comentario y calificación sobre nuestro trabajo.</p>
+      </div>
+
+      <div class="reviews__container">
+        <div class="reviews__content">
+           <div class="reviews__header-info">
+              <p>Total de calificaciones: <strong id="reviewsTotalCount" style="color: var(--color-neon-cyan);">0</strong></p>
+           </div>
+           
+           <div class="reviews__list" id="reviewsList">
+              <p class="reviews__empty" id="reviewsEmpty">Cargando calificaciones...</p>
+           </div>
+        </div>
+
+        <form class="contact-form review-form" id="reviewForm">
+          <div class="review-form__header">
+             <h3 class="review-form__title">Evalúe su experiencia</h3>
+             <div class="review-form__stars" id="starSelector">
+               <span data-val="1" class="star active">★</span>
+               <span data-val="2" class="star active">★</span>
+               <span data-val="3" class="star active">★</span>
+               <span data-val="4" class="star active">★</span>
+               <span data-val="5" class="star active">★</span>
+             </div>
+          </div>
+          
+          <input type="text" id="revName" class="contact-form__input" placeholder="Su nombre o nombre del negocio" required>
+          <textarea id="revText" class="contact-form__textarea" placeholder="¿Cómo fue su experiencia trabajando conmigo?" required></textarea>
+          
+          <button type="submit" class="btn btn--primary btn--block">PUBLICAR CALIFICACIÓN</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============ CONTACTO ============ -->
+    <section class="contact" id="contacto">
+      <div class="section-head">
+        <span class="section-head__tag">// Centro de Mando</span>
+        <h2 class="section-head__title">Iniciemos su proyecto</h2>
+        <p class="section-head__text">Cuénteme sobre su negocio. Le responderé personalmente en menos de 24 horas.</p>
+      </div>
+
+      <form class="contact-form" id="contactForm" novalidate>
+        <div class="contact-form__terminal-head">
+          <span class="contact-form__dot contact-form__dot--red"></span>
+          <span class="contact-form__dot contact-form__dot--yellow"></span>
+          <span class="contact-form__dot contact-form__dot--green"></span>
+          <span class="contact-form__terminal-title">nuevo-proyecto.terminal</span>
+        </div>
+
+        <div class="contact-form__grid">
+          <div class="contact-form__field">
+            <label for="fieldNombre" class="contact-form__label">Nombre completo</label>
+            <input type="text" id="fieldNombre" name="nombre" class="contact-form__input" placeholder="Ej. Juan Pérez" required>
+          </div>
+          <div class="contact-form__field">
+            <label for="fieldCorreo" class="contact-form__label">Correo electrónico</label>
+            <input type="email" id="fieldCorreo" name="correo" class="contact-form__input" placeholder="ejemplo@correo.com" required>
+          </div>
+          <div class="contact-form__field">
+            <label for="fieldWhatsapp" class="contact-form__label">WhatsApp</label>
+            <input type="tel" id="fieldWhatsapp" name="whatsapp" class="contact-form__input" placeholder="+506 0000 0000" required>
+          </div>
+          <div class="contact-form__field">
+            <label for="fieldNegocio" class="contact-form__label">Tipo de negocio</label>
+            <select id="fieldNegocio" name="negocio" class="contact-form__select" required>
+              <option value="" disabled selected>Seleccione una opción...</option>
+              <option value="Restaurante">Restaurante</option>
+              <option value="Turismo">Turismo</option>
+              <option value="Salón de Belleza">Salón de Belleza</option>
+              <option value="Hotel">Hotel</option>
+              <option value="Tienda">Tienda</option>
+              <option value="Ventas Online">Ventas Online</option>
+              <option value="Bienes Raíces">Bienes Raíces</option>
+              <option value="Clínica">Clínica</option>
+              <option value="Gimnasio">Gimnasio</option>
+              <option value="Ferretería">Ferretería</option>
+              <option value="Veterinaria">Veterinaria</option>
+              <option value="Taller Mecánico">Taller Mecánico</option>
+              <option value="Hotel para Perros">Hotel para Perros</option>
+              <option value="Mantenimiento y Limpieza">Mantenimiento y Limpieza</option>
+              <option value="Fotografía">Fotografía</option>
+              <option value="Academia">Academia</option>
+              <option value="Tarjetas de Invitación">Tarjetas de Invitación</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+          <div class="contact-form__field contact-form__field--full">
+            <label for="fieldProyecto" class="contact-form__label contact-form__label--accent"><span class="contact-form__label-dot"></span>ID del proyecto que le gustó</label>
+            <input type="text" id="fieldProyecto" name="proyecto" class="contact-form__input contact-form__input--accent" placeholder="Ej: PROYECTO #1 (Deje en blanco si no tiene referencia)">
+          </div>
+          <div class="contact-form__field contact-form__field--full">
+            <label for="fieldMensaje" class="contact-form__label">Cuénteme sobre su negocio y qué le gustaría que hiciera la página</label>
+            <textarea id="fieldMensaje" name="mensaje" class="contact-form__textarea" rows="5" placeholder="Ej: Tengo un restaurante y quiero que mis clientes puedan ver el menú y reservar..." required></textarea>
+          </div>
+          <div class="contact-form__field contact-form__field--full">
+            <button type="submit" class="btn btn--primary btn--block" id="submitBtn">
+              <span id="submitText">INICIAR PROYECTO</span>
+              <svg class="btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="footer">
+    <div class="footer__container">
+      <div class="footer__brand">
+        <span class="footer__logo">◆ TECHSTUDIO</span>
+        <p class="footer__tagline">Páginas web del futuro, hechas para personas reales.</p>
+      </div>
+
+      <div class="footer__social">
+        <a href="https://instagram.com/andresz819" target="_blank" class="footer__social-link" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+        </a>
+        <a href="https://wa.me/50689413632" target="_blank" class="footer__social-link" aria-label="WhatsApp">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+        </a>
+      </div>
+
+      <div class="footer__bottom">
+        <p class="footer__copy">© 2026 TECHSTUDIO. Todos los derechos reservados.</p>
+        <p class="footer__credit">Desarrollado con código limpio y tecnología de punta.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============ MODAL ADMINISTRADOR (SUPABASE AUTH) ============ -->
+  <div class="admin-modal" id="adminModal">
+     <div class="admin-modal__content">
+        <div class="admin-modal__header">
+           <h3 id="adminModalTitle">Panel de Administración</h3>
+           <button class="admin-modal__close" id="closeAdminBtn">✕</button>
+        </div>
+        
+        <!-- Vista de Login por Correo -->
+        <div id="adminLoginView" class="admin-login-box" style="padding: 24px;">
+           <p style="color: var(--color-text-secondary); font-size: 0.85rem; margin-bottom: 16px; text-align: center;">
+              Ingrese con su cuenta de administrador de Supabase.
+           </p>
+           <form id="adminLoginForm" style="display: flex; flex-direction: column; gap: 12px;">
+              <input type="email" id="adminEmail" class="contact-form__input" placeholder="Su correo electrónico" required>
+              <input type="password" id="adminPassword" class="contact-form__input" placeholder="Contraseña" required>
+              <button type="submit" class="btn btn--primary btn--block">INICIAR SESIÓN</button>
+              <button type="button" id="btnForgotPass" style="background:none; border:none; color:var(--color-neon-cyan); font-size:0.75rem; cursor:pointer; margin-top:8px; text-align:center;">
+                 ¿Olvidó su contraseña? Recupérela por correo
+              </button>
+           </form>
+        </div>
+
+        <!-- Vista del Dashboard (Pendientes / Terminados) -->
+        <div id="adminDashboardView" style="display: none;">
+           <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--color-border);">
+              <span id="adminLoggedUser" style="font-size: 0.75rem; color: var(--color-neon-cyan);"></span>
+              <button id="btnLogoutAdmin" style="background: none; border: none; color: #ff5f56; font-size: 0.75rem; cursor: pointer;">Cerrar Sesión</button>
+           </div>
+
+           <div class="admin-tabs">
+              <button class="admin-tab active" data-target="pendientes">Pendientes</button>
+              <button class="admin-tab" data-target="terminados">Terminados</button>
+           </div>
+
+           <div class="admin-modal__body">
+              <div id="sectionPendientes" class="admin-section active">
+                 <div id="adminLeadsContainer"></div>
+              </div>
+              <div id="sectionTerminados" class="admin-section" style="display: none;">
+                 <div id="adminCompletedContainer"></div>
+              </div>
+           </div>
+        </div>
+
+     </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
