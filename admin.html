@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TECHSTUDIO | Panel de Administración</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Librería de Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --color-bg-base: #0a0a12;
+      --color-bg-elevated: #12121c;
+      --color-bg-card: rgba(20, 20, 32, 0.75);
+      --color-neon-cyan: #00e5ff;
+      --color-neon-magenta: #ff00e5;
+      --color-neon-cyan-soft: rgba(0, 229, 255, 0.15);
+      --color-text-primary: #e8e8f0;
+      --color-text-secondary: #8a8aa0;
+      --color-text-muted: #5a5a72;
+      --color-border: rgba(255, 255, 255, 0.08);
+      --font-display: 'Orbitron', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font-body);
+      background: radial-gradient(circle at center, #0f1629 0%, #030712 100%);
+      color: var(--color-text-primary);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .admin-container {
+      background: var(--color-bg-elevated);
+      border: 1px solid rgba(0, 229, 255, 0.25);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 950px;
+      padding: 35px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 229, 255, 0.1);
+      position: relative;
+    }
+
+    .admin-header-link {
+      position: absolute;
+      top: 25px;
+      right: 25px;
+      color: var(--color-text-secondary);
+      font-size: 0.8rem;
+      text-decoration: none;
+      font-family: var(--font-display);
+      transition: color 0.3s;
+    }
+    .admin-header-link:hover { color: var(--color-neon-cyan); }
+
+    /* Login */
+    #adminLoginView {
+      max-width: 400px;
+      margin: 40px auto;
+      text-align: center;
+    }
+    .login-icon {
+      font-size: 2.5rem;
+      color: var(--color-neon-cyan);
+      margin-bottom: 10px;
+      text-shadow: 0 0 15px var(--color-neon-cyan);
+    }
+    .login-title {
+      font-family: var(--font-display);
+      color: var(--color-neon-cyan);
+      margin-bottom: 25px;
+      font-size: 1.1rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(10, 10, 18, 0.6);
+      border: 1px solid var(--color-border);
+      color: #fff;
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.3s;
+      margin-bottom: 15px;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--color-neon-cyan);
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+    }
+    .form-select option { background: var(--color-bg-base); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 12px;
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--color-neon-cyan), var(--color-neon-magenta));
+      color: var(--color-bg-base);
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+    }
+    .btn-primary:hover {
+      box-shadow: 0 0 30px rgba(0, 229, 255, 0.6);
+      transform: translateY(-2px);
+    }
+
+    /* Dashboard */
+    .admin-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 15px;
+    }
+    .admin-title {
+      font-family: var(--font-display);
+      color: var(--color-neon-cyan);
+      font-size: 1.1rem;
+      letter-spacing: 0.05em;
+    }
+    .admin-user {
+      font-size: 0.75rem;
+      color: var(--color-text-secondary);
+      margin-top: 4px;
+    }
+    .btn-logout {
+      background: rgba(255, 95, 86, 0.1);
+      color: #ff5f56;
+      border: 1px solid rgba(255, 95, 86, 0.3);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-family: var(--font-display);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-logout:hover { background: rgba(255, 95, 86, 0.2); }
+
+    /* Pestañas */
+    .admin-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 12px;
+      overflow-x: auto;
+    }
+    .admin-tab-btn {
+      padding: 8px 16px;
+      font-size: 0.75rem;
+      font-family: var(--font-display);
+      letter-spacing: 0.05em;
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--color-text-secondary);
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+    .admin-tab-btn.active {
+      background: rgba(0, 229, 255, 0.1);
+      color: var(--color-neon-cyan);
+      border-color: rgba(0, 229, 255, 0.3);
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.15);
+    }
+
+    /* Tarjetas de control (Listas) */
+    .admin-card-box {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      backdrop-filter: blur(10px);
+      transition: border-color 0.3s;
+    }
+    .admin-card-box:hover { border-color: rgba(0, 229, 255, 0.3); }
+
+    .card-info { font-size: 0.85rem; line-height: 1.5; }
+    .card-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    .btn-action {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-family: var(--font-display);
+      cursor: pointer;
+      border: 1px solid;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+    .btn-done { background: rgba(39, 201, 63, 0.1); color: #27c93f; border-color: rgba(39, 201, 63, 0.3); }
+    .btn-done:hover { background: rgba(39, 201, 63, 0.2); }
+    .btn-pending { background: rgba(255, 189, 46, 0.1); color: #ffbd2e; border-color: rgba(255, 189, 46, 0.3); }
+    .btn-pending:hover { background: rgba(255, 189, 46, 0.2); }
+    .btn-delete { background: rgba(255, 95, 86, 0.1); color: #ff5f56; border-color: rgba(255, 95, 86, 0.3); }
+    .btn-delete:hover { background: rgba(255, 95, 86, 0.2); }
+
+    .section-title {
+      font-size: 0.95rem;
+      margin-bottom: 15px;
+      color: var(--color-text-primary);
+      font-family: var(--font-display);
+    }
+    .empty-msg { font-size: 0.85rem; color: var(--color-text-muted); text-align: center; padding: 20px; }
+    
+    .scrollable-area { max-height: 420px; overflow-y: auto; padding-right: 5px; }
+  </style>
+</head>
+<body>
+
+  <div class="admin-container">
+    <a href="index.html" class="admin-header-link">✕ Volver al sitio</a>
+    
+    <!-- VISTA DE LOGIN -->
+    <div id="adminLoginView">
+      <div class="login-icon">◆</div>
+      <h3 class="login-title">Acceso de Administrador</h3>
+      <form id="adminLoginForm">
+        <input type="email" id="adminEmail" class="form-input" placeholder="Correo electrónico" required>
+        <input type="password" id="adminPassword" class="form-input" placeholder="Contraseña" required>
+        <button type="submit" class="btn btn-primary">AUTORIZAR ACCESO</button>
+      </form>
+    </div>
+
+    <!-- VISTA DEL PANEL DE CONTROL -->
+    <div id="adminDashboardView" style="display: none;">
+      <div class="admin-topbar">
+        <div>
+          <h3 class="admin-title">Panel de Control TECHSTUDIO</h3>
+          <p id="adminLoggedUser" class="admin-user"></p>
+        </div>
+        <button id="btnLogoutAdmin" class="btn-logout">Cerrar Sesión</button>
+      </div>
+
+      <!-- PESTAÑAS -->
+      <div class="admin-tabs">
+        <button class="admin-tab-btn active" data-tab="tabLeads">Clientes / Leads</button>
+        <button class="admin-tab-btn" data-tab="tabProjects">Gestión de Proyectos</button>
+        <button class="admin-tab-btn" data-tab="tabUpload">Subir Nuevo Proyecto</button>
+        <button class="admin-tab-btn" data-tab="tabReviews">Moderación de Reseñas</button>
+      </div>
+
+      <!-- 1. PESTAÑA LEADS -->
+      <div class="admin-tab-content" id="tabLeads">
+        <h4 class="section-title">Solicitudes y Cotizaciones de Clientes</h4>
+        <div id="adminLeadsList" class="scrollable-area">
+          <p class="empty-msg">Cargando solicitudes...</p>
+        </div>
+      </div>
+
+      <!-- 2. PESTAÑA GESTIÓN DE PROYECTOS -->
+      <div class="admin-tab-content" id="tabProjects" style="display: none;">
+        <h4 class="section-title">Proyectos Activos (Portafolio)</h4>
+        <div id="adminProjectsList" class="scrollable-area">
+          <p class="empty-msg">Cargando proyectos...</p>
+        </div>
+      </div>
+
+      <!-- 3. PESTAÑA SUBIR NUEVO PROYECTO -->
+      <div class="admin-tab-content" id="tabUpload" style="display: none;">
+        <h4 class="section-title">Publicar Nuevo Proyecto y Subir Foto a la Nube</h4>
+        <form id="adminProjectForm" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;" class="scrollable-area">
+          <div style="grid-column: span 2;">
+            <input type="text" id="pTitle" class="form-input" placeholder="Título del Negocio / Proyecto (Ej: La Choza de Alejo)" required style="margin-bottom:0;">
+          </div>
+
+          <div>
+            <label style="font-size: 0.75rem; color: var(--color-text-secondary); display: block; margin-bottom: 5px;">Categoría:</label>
+            <select id="pCategory" class="form-select" required>
+              <option value="" disabled selected>Seleccione categoría...</option>
+              <option value="restaurantes">Restaurantes</option>
+              <option value="turismo">Turismo</option>
+              <option value="salones">Salones de Belleza</option>
+              <option value="hoteles">Hoteles</option>
+              <option value="tiendas">Tiendas</option>
+              <option value="ventas">Ventas Online</option>
+              <option value="bienes-raices">Bienes Raíces</option>
+              <option value="clinicas">Clínicas</option>
+              <option value="gimnasios">Gimnasios</option>
+              <option value="ferreterias">Ferreterías</option>
+              <option value="veterinarias">Veterinarias</option>
+              <option value="talleres">Talleres Mecánicos</option>
+              <option value="hoteles-perros">Hoteles para Perros</option>
+              <option value="mantenimiento">Mantenimiento y Limpieza</option>
+              <option value="fotografos">Fotógrafos</option>
+              <option value="academias">Academias</option>
+              <option value="invitaciones">Tarjetas de Invitación</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size: 0.75rem; color: var(--color-text-secondary); display: block; margin-bottom: 5px;">Plan Asociado:</label>
+            <select id="pPlan" class="form-select" required>
+              <option value="" disabled selected>Seleccione plan...</option>
+              <option value="Básico">Básico</option>
+              <option value="Profesional">Profesional</option>
+              <option value="Experto">Experto</option>
+            </select>
+          </div>
+
+          <div style="grid-column: span 2;">
+            <label style="font-size: 0.75rem; color: var(--color-text-secondary); display: block; margin-bottom: 5px;">Imagen de Portada (Sube el archivo):</label>
+            <input type="file" id="pImageFile" class="form-input" accept="image/*" required style="padding: 10px; margin-bottom: 0;">
+          </div>
+
+          <div style="grid-column: span 2;">
+            <input type="url" id="pLink" class="form-input" placeholder="Link de la página web en vivo (Ej: https://...)" required style="margin-bottom:0;">
+          </div>
+
+          <div style="grid-column: span 2;">
+            <textarea id="pDesc" class="form-textarea" placeholder="Breve descripción del proyecto..." style="min-height: 80px; margin-bottom:0;" required></textarea>
+          </div>
+
+          <div style="grid-column: span 2;">
+            <button type="submit" class="btn btn-primary" id="btnSubirProj">SUBIR A LA NUBE Y PUBLICAR</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- 4. PESTAÑA MODERACIÓN DE RESEÑAS -->
+      <div class="admin-tab-content" id="tabReviews" style="display: none;">
+        <h4 class="section-title">Moderación de Calificaciones y Comentarios</h4>
+        <div id="adminReviewsList" class="scrollable-area">
+          <p class="empty-msg">Cargando reseñas...</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://knpwidydhsgdyudyjbnb.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtucHdpZHlkaHNnZHl1ZHlqYm5iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1MTQ0ODgsImV4cCI6MjEwNTA5MDQ4OH0.smLTgukqbkjezhyd3E4YtV0h7n27j80ihadxBPPkBsM';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginView = document.getElementById('adminLoginView');
+      const dashboardView = document.getElementById('adminDashboardView');
+      const loginForm = document.getElementById('adminLoginForm');
+      const btnLogout = document.getElementById('btnLogoutAdmin');
+      const loggedUser = document.getElementById('adminLoggedUser');
+
+      if (!loginView || !dashboardView) return;
+
+      const cargarAdminData = async () => {
+        // 1. Cargar Leads
+        const { data: leads } = await supabaseClient.from('leads').select('*').order('created_at', { ascending: false });
+        const leadsList = document.getElementById('adminLeadsList');
+        if (leadsList) {
+          leadsList.innerHTML = leads && leads.length ? '' : '<p class="empty-msg">No hay leads registrados.</p>';
+          
+          leads?.forEach(l => {
+            const item = document.createElement('div');
+            const esTerminado = l.status === 'terminado';
+            item.className = 'admin-card-box';
+            
+            item.innerHTML = `
+              <div class="card-info">
+                <strong>${l.nombre}</strong> (${l.negocio || 'Negocio'}) - <span style="color: ${esTerminado ? '#27c93f' : '#ffbd2e'}; font-weight: 600;">${l.status.toUpperCase()}</span><br>
+                <span style="color: var(--color-text-secondary);">Wp: ${l.whatsapp} | Proyecto: ${l.proyecto}</span><br>
+                <span style="color: var(--color-text-muted);">Mensaje: "${l.mensaje}"</span>
+              </div>
+              <div class="card-actions">
+                <button class="btn-action ${esTerminado ? 'btn-pending' : 'btn-done'}" onclick="cambiarEstadoLead('${l.id}', '${esTerminado ? 'pendiente' : 'terminado'}')">
+                  ${esTerminado ? 'Marcar Pendiente' : 'Marcar Terminado'}
+                </button>
+                <button class="btn-action btn-delete" onclick="eliminarLead('${l.id}')">Borrar</button>
+              </div>
+            `;
+            leadsList.appendChild(item);
+          });
+        }
+
+        // 2. Cargar Proyectos Publicados
+        const { data: projects } = await supabaseClient.from('projects').select('*').order('created_at', { ascending: false });
+        const projectsList = document.getElementById('adminProjectsList');
+        if (projectsList) {
+          projectsList.innerHTML = projects && projects.length ? '' : '<p class="empty-msg">No hay proyectos publicados.</p>';
+          
+          projects?.forEach(p => {
+            const item = document.createElement('div');
+            item.className = 'admin-card-box';
+            item.innerHTML = `
+              <div style="display: flex; align-items: center; gap: 12px;" class="card-info">
+                ${p.image_url ? `<img src="${p.image_url}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid var(--color-border);" />` : ''}
+                <div>
+                  <strong>${p.title}</strong> <span style="color: var(--color-neon-cyan);">[${p.category}]</span><br>
+                  <span style="color: var(--color-text-secondary);">Plan: ${p.plan} | Ref: ${p.project_number}</span>
+                </div>
+              </div>
+              <div class="card-actions">
+                <button class="btn-action btn-delete" onclick="eliminarProyecto('${p.id}')">Borrar</button>
+              </div>
+            `;
+            projectsList.appendChild(item);
+          });
+        }
+
+        // 3. Cargar Reviews para moderación
+        const { data: revs } = await supabaseClient.from('reviews').select('*').order('created_at', { ascending: false });
+        const revsList = document.getElementById('adminReviewsList');
+        if (revsList) {
+          revsList.innerHTML = revs && revs.length ? '' : '<p class="empty-msg">No hay calificaciones registradas.</p>';
+          revs?.forEach(r => {
+            const item = document.createElement('div');
+            item.className = 'admin-card-box';
+            item.innerHTML = `
+              <div class="card-info">
+                <strong>${r.name}</strong> <span style="color: #ffc107;">(${r.stars}★)</span><br>
+                <span style="color: var(--color-text-secondary);">"${r.text}"</span>
+              </div>
+              <div class="card-actions">
+                <button class="btn-action btn-delete" onclick="eliminarReview('${r.id}')">Borrar Reseña</button>
+              </div>
+            `;
+            revsList.appendChild(item);
+          });
+        }
+      };
+
+      const checkSession = async () => {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) {
+          loginView.style.display = 'none';
+          dashboardView.style.display = 'block';
+          loggedUser.textContent = `Administrador: ${session.user.email}`;
+          cargarAdminData();
+        } else {
+          loginView.style.display = 'block';
+          dashboardView.style.display = 'none';
+        }
+      };
+
+      checkSession();
+
+      if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const email = document.getElementById('adminEmail').value;
+          const password = document.getElementById('adminPassword').value;
+          const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+          if (error) alert('Credenciales incorrectas: ' + error.message);
+          else checkSession();
+        });
+      }
+
+      if (btnLogout) {
+        btnLogout.addEventListener('click', async () => {
+          await supabaseClient.auth.signOut();
+          checkSession();
+        });
+      }
+
+      // Sistema de Pestañas del Admin
+      document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.admin-tab-content').forEach(c => c.style.display = 'none');
+
+          btn.classList.add('active');
+          document.getElementById(btn.dataset.tab).style.display = 'block';
+        });
+      });
+
+      // Formulario de Subida de Proyectos con archivo a Supabase Storage
+      const projForm = document.getElementById('adminProjectForm');
+      if (projForm) {
+        projForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const btnSubir = document.getElementById('btnSubirProj');
+          btnSubir.textContent = 'SUBIENDO IMAGEN A LA NUBE...';
+          btnSubir.disabled = true;
+
+          const fileInput = document.getElementById('pImageFile');
+          const file = fileInput.files[0];
+
+          if (!file) {
+            alert('Por favor seleccione una imagen.');
+            btnSubir.textContent = 'SUBIR A LA NUBE Y PUBLICAR';
+            btnSubir.disabled = false;
+            return;
+          }
+
+          // 1. Subir archivo a Supabase Storage (bucket: proyectos)
+          const fileName = `proj_${Date.now()}_${file.name}`;
+          const { error: uploadError } = await supabaseClient.storage
+            .from('proyectos')
+            .upload(fileName, file);
+
+          if (uploadError) {
+            alert('Error al subir la imagen: ' + uploadError.message);
+            btnSubir.textContent = 'SUBIR A LA NUBE Y PUBLICAR';
+            btnSubir.disabled = false;
+            return;
+          }
+
+          // 2. Obtener URL pública de la imagen
+          const { data: urlData } = supabaseClient.storage
+            .from('proyectos')
+            .getPublicUrl(fileName);
+
+          // 3. Contar proyectos para asignar número correlativo automáticamente
+          const { count } = await supabaseClient.from('projects').select('*', { count: 'exact', head: true });
+          const numeroProyecto = (count || 0) + 1;
+
+          // 4. Guardar datos en la base de datos
+          const nuevoProj = {
+            title: document.getElementById('pTitle').value.trim(),
+            category: document.getElementById('pCategory').value.trim().toLowerCase(),
+            plan: document.getElementById('pPlan').value.trim(),
+            image_url: urlData.publicUrl,
+            project_link: document.getElementById('pLink').value.trim(),
+            project_number: 'PROYECTO #' + numeroProyecto,
+            description: document.getElementById('pDesc').value.trim()
+          };
+
+          const { error: dbError } = await supabaseClient.from('projects').insert([nuevoProj]);
+
+          btnSubir.textContent = 'SUBIR A LA NUBE Y PUBLICAR';
+          btnSubir.disabled = false;
+
+          if (dbError) {
+            alert('Error al guardar el proyecto en la base de datos: ' + dbError.message);
+          } else {
+            alert('¡Proyecto y foto subidos con éxito!');
+            projForm.reset();
+            cargarAdminData();
+          }
+        });
+      }
+    });
+
+    // Funciones globales para botones de administración
+    window.cambiarEstadoLead = async function(id, nuevoStatus) {
+      const { error } = await supabaseClient.from('leads').update({ status: nuevoStatus }).eq('id', id);
+      if (!error) location.reload();
+    };
+
+    window.eliminarLead = async function(id) {
+      if (!confirm('¿Está seguro de eliminar este lead?')) return;
+      const { error } = await supabaseClient.from('leads').delete().eq('id', id);
+      if (!error) location.reload();
+    };
+
+    window.eliminarProyecto = async function(id) {
+      if (!confirm('¿Está seguro de eliminar este proyecto del portafolio?')) return;
+      const { error } = await supabaseClient.from('projects').delete().eq('id', id);
+      if (!error) location.reload();
+    };
+
+    window.eliminarReview = async function(id) {
+      if (!confirm('¿Desea eliminar esta reseña/comentario?')) return;
+      const { error } = await supabaseClient.from('reviews').delete().eq('id', id);
+      if (!error) location.reload();
+    };
+  </script>
+</body>
+</html>

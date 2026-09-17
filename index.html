@@ -33,8 +33,8 @@
           <li class="nav__item"><a href="#proyectos" class="nav__link">Proyectos</a></li>
           <li class="nav__item"><a href="#calificaciones" class="nav__link">Calificaciones</a></li>
           <li class="nav__item"><a href="#contacto" class="nav__link nav__link--cta">Cotizar</a></li>
-          <!-- BOTÓN ADMIN -->
-          <li class="nav__item"><a href="#" id="btnAdmin" class="nav__link" style="color: var(--color-neon-magenta); font-weight: 700;">Admin</a></li>
+          <!-- ENLACE AL PANEL DE ADMIN SEPARADO -->
+          <li class="nav__item"><a href="admin.html" class="nav__link" style="color: var(--color-neon-magenta); font-weight: 700;">Admin</a></li>
         </ul>
       </nav>
     </div>
@@ -310,7 +310,7 @@
     <section class="portfolio" id="proyectos">
       <div class="section-head">
         <span class="section-head__tag">// Portafolio</span>
-        <h2 class="section-head__title">Algunos de mis proyectos </h2>
+        <h2 class="section-head__title">Algunos de mis proyectos</h2>
         <p class="section-head__text">Puede usarlos como guía, para que le sea mas fácil decidir que es lo que realmente desea para su empresa.</p>
       </div>
 
@@ -343,7 +343,7 @@
         <p class="portfolio__note-text">
           <strong>Importante:</strong> las páginas de los planes <strong>Básico</strong> y
           <strong>Profesional</strong> únicamente pueden ser editadas a mano por mi persona.
-          Con el plan <strong>Experto</strong>, usted puede subir sus propios archivos, fotos e información
+          Con el plan <strong>Experto</strong>, usted puede subir sus propios archivos, e información
           cuando quiera, sin depender de nadie.
         </p>
       </div>
@@ -482,31 +482,6 @@
       </div>
     </div>
   </footer>
-
-  <!-- ============ MODAL ADMINISTRADOR ============ -->
-  <div class="admin-modal" id="adminModal">
-     <div class="admin-modal__content">
-        <button id="closeAdminBtn" class="admin-modal__close">✕</button>
-        
-        <h3 style="color: var(--color-neon-cyan); text-align: center; margin-bottom: 25px; font-family: var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; font-size: 1.1rem;">Acceso Restringido</h3>
-        
-        <div id="adminLoginView">
-           <form id="adminLoginForm" style="display: flex; flex-direction: column; gap: 15px;">
-              <input type="email" id="adminEmail" class="contact-form__input" placeholder="Correo electrónico del Administrador" required>
-              <input type="password" id="adminPassword" class="contact-form__input" placeholder="Contraseña" required>
-              <button type="submit" class="btn btn--primary btn--block">INICIAR SESIÓN</button>
-              <button type="button" id="btnForgotPass" style="background: none; border: none; color: var(--color-neon-magenta); font-size: 0.75rem; margin-top: 10px; cursor: pointer; text-decoration: underline;">¿Olvidó su contraseña?</button>
-           </form>
-        </div>
-
-        <div id="adminDashboardView" style="display: none; text-align: center;">
-           <p style="color: #00ff88; margin-bottom: 15px; font-weight: 600;">✓ ¡Sesión iniciada con éxito!</p>
-           <p id="adminLoggedUser" style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 25px;"></p>
-           <p style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 25px;">El panel de gestión interno estará disponible en la próxima actualización.</p>
-           <button id="btnLogoutAdmin" class="btn btn--outline btn--block" style="border-color: #ff5f56; color: #ff5f56;">CERRAR SESIÓN</button>
-        </div>
-     </div>
-  </div>
 
   <script src="script.js"></script>
 </body>

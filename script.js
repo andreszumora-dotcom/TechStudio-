@@ -1,72 +1,22 @@
 'use strict';
 
-/* ============================================
-   CONFIGURACIÓN Y SUPABASE
-   ============================================ */
-const WHATSAPP_NUMBER = '50689413632'; 
 const SUPABASE_URL = 'https://knpwidydhsgdyudyjbnb.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtucHdpZHlkaHNnZHl1ZHlqYm5iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1MTQ0ODgsImV4cCI6MjEwNTA5MDQ4OH0.smLTgukqbkjezhyd3E4YtV0h7n27j80ihadxBPPkBsM';
+const WHATSAPP_NUMBER = '50689413632';
 
-// Cambiamos el nombre a supabaseClient para evitar el SyntaxError
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-if ('scrollRestoration' in history) {
-  history.scrollRestoration = 'manual';
-}
-window.addEventListener('load', () => {
-  window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-});
-window.addEventListener('beforeunload', () => {
-  window.scrollTo(0, 0);
-});
-
-// Proyectos fijos para la demo (sin base de datos por ahora)
-const PROJECTS_DEMO = [
-  {
-    id: 1,
-    category: 'salones',
-    plan: 'Básico',
-    title: 'Sala De Belleza Y Academia Victoria',
-    description: 'Página básica para salón de belleza y academia. Muestra servicios, precios y contacto directo por WhatsApp.',
-    image_url: 'belleza.png',
-    project_link: 'https://saladebellezavictoria.github.io/saladebellezavictoria/',
-    project_number: 'PROYECTO #1'
-  },
-  {
-    id: 2,
-    category: 'restaurantes',
-    plan: 'Profesional',
-    title: 'La Choza de Alejo',
-    description: 'Página profesional para restaurante. Incluye menú, galería de fotos, ubicación y reservaciones por WhatsApp.',
-    image_url: 'alejo.png',
-    project_link: 'https://chozadealejo4.github.io/choza-de-alejo/',
-    project_number: 'PROYECTO #2'
-  },
-  {
-    id: 3,
-    category: 'hoteles',
-    plan: 'Profesional',
-    title: 'ApartaHotel Playa Luna',
-    description: 'Página profesional para hotel. Muestra habitaciones, servicios, galería y sistema de reservas conectado a WhatsApp.',
-    image_url: 'luna.png',
-    project_link: 'https://chozadealejo4.github.io/apartahotelplayaluna/',
-    project_number: 'PROYECTO #3'
-  }
-];
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+window.addEventListener('load', () => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }));
 
 document.addEventListener('DOMContentLoaded', () => {
   initNav();
-  cargarProyectosDemo();
-  cargarCalificacionesDemo();
+  cargarProyectos();
+  cargarCalificaciones();
   initReviewForm();
-  initContactForm(); 
-  initAdminPanel();  
-  initRevealOnScroll();
+  initContactForm();
 });
 
-/* ============================================
-   NAVEGACIÓN
-   ============================================ */
 function initNav() {
   const nav = document.getElementById('nav');
   const toggle = document.getElementById('navToggle');
@@ -93,20 +43,35 @@ function initNav() {
     }
   });
 
-  menu.querySelectorAll('.nav__link').forEach((l) => l.addEventListener('click', closeMenu));
+  menu.querySelectorAll('.nav__link').forEach(l => l.addEventListener('click', closeMenu));
   window.addEventListener('resize', () => { if (window.innerWidth > 768) closeMenu(); });
 }
 
-/* ============================================
-   PROYECTOS (DEMO)
-   ============================================ */
-function cargarProyectosDemo() {
+async function cargarProyectos() {
   const grid = document.getElementById('portfolioGrid');
+  const emptyMsg = document.getElementById('portfolioEmpty');
   const projectCountEl = document.getElementById('projectCount');
   if (!grid) return;
 
-  const proyectos = PROJECTS_DEMO;
+  const { data: proyectos, error } = await supabaseClient
+    .from('projects')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error cargando proyectos:', error);
+    if (emptyMsg) { emptyMsg.textContent = 'Error al cargar proyectos.'; emptyMsg.classList.add('is-visible'); }
+    return;
+  }
+
+  if (!proyectos || proyectos.length === 0) {
+    if (emptyMsg) { emptyMsg.textContent = 'Pronto se subirán nuevos proyectos.'; emptyMsg.classList.add('is-visible'); }
+    if (projectCountEl) projectCountEl.textContent = '0';
+    return;
+  }
+
   if (projectCountEl) projectCountEl.textContent = `+${proyectos.length}`;
+  if (emptyMsg) emptyMsg.classList.remove('is-visible');
 
   grid.innerHTML = '';
   proyectos.forEach((p, index) => {
@@ -114,18 +79,19 @@ function cargarProyectosDemo() {
     card.className = 'project';
     card.dataset.category = (p.category || '').toLowerCase().trim();
 
-    const visualClass = p.image_url
-      ? 'project__visual'
-      : `project__visual project__visual--gradient-${(index % 10) + 1}`;
-
     const visualStyle = p.image_url ? `style="background-image: url('${p.image_url}');"` : '';
-    const categoryLabel = p.category ? p.category.charAt(0).toUpperCase() + p.category.slice(1) : 'Proyecto';
-    const planBadge = p.plan ? `<span class="project__badge ${p.plan === 'Profesional' ? 'project__badge--pro' : ''}">${p.plan}</span>` : '';
+    const categoryLabel = p.category ? p.category.charAt(0).toUpperCase() + p.category.slice(1).replace(/-/g, ' ') : 'Proyecto';
+
+    let planBadgeClass = '';
+    if (p.plan === 'Profesional') planBadgeClass = 'project__badge--pro';
+    else if (p.plan === 'Experto') planBadgeClass = 'project__badge--exp';
+
+    const planBadge = p.plan ? `<span class="project__badge ${planBadgeClass}">${p.plan}</span>` : '';
 
     card.innerHTML = `
-      <div class="${visualClass}" ${visualStyle}>
+      <div class="project__visual" ${visualStyle}>
         <span class="project__scanline" aria-hidden="true"></span>
-        <span class="project__code">${p.project_number || 'PROYECTO #' + (index + 1)}</span>
+        <span class="project__code">${p.project_number || 'PROYECTO #' + (proyectos.length - index)}</span>
         ${planBadge}
       </div>
       <div class="project__info">
@@ -148,43 +114,44 @@ function initFilters() {
 
   filterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      filterBtns.forEach(b => {
-        b.classList.remove('portfolio__filter--active');
-        b.setAttribute('aria-selected', 'false');
-      });
+      filterBtns.forEach(b => { b.classList.remove('portfolio__filter--active'); b.setAttribute('aria-selected', 'false'); });
       btn.classList.add('portfolio__filter--active');
       btn.setAttribute('aria-selected', 'true');
-
       const filter = btn.dataset.filter;
       let visible = 0;
-
       cards.forEach(card => {
-        const cat = card.dataset.category;
-        const show = filter === 'all' || cat === filter;
+        const show = filter === 'all' || card.dataset.category === filter;
         card.classList.toggle('is-hidden', !show);
         if (show) visible++;
       });
-
       if (emptyMsg) emptyMsg.classList.toggle('is-visible', visible === 0);
     });
   });
 }
 
-/* ============================================
-   CALIFICACIONES (LOCALSTORAGE POR AHORA)
-   ============================================ */
-function cargarCalificacionesDemo() {
+async function cargarCalificaciones() {
   const list = document.getElementById('reviewsList');
   const emptyEl = document.getElementById('reviewsEmpty');
   const totalEl = document.getElementById('reviewsTotalCount');
   const heroStars = document.getElementById('heroStars');
   if (!list) return;
 
-  const reviews = JSON.parse(localStorage.getItem('techstudio_reviews') || '[]');
+  const { data: reviews, error } = await supabaseClient
+    .from('reviews')
+    .select('*')
+    .order('created_at', { ascending: false });
 
-  if (!reviews.length) {
+  if (error) {
+    console.error('Error cargando calificaciones:', error);
+    if (emptyEl) emptyEl.textContent = 'Error al cargar calificaciones.';
+    if (heroStars) heroStars.textContent = '★★★★★';
+    return;
+  }
+
+  if (!reviews || reviews.length === 0) {
     if (emptyEl) emptyEl.textContent = 'Aún no hay calificaciones. ¡Sé el primero!';
     if (totalEl) totalEl.textContent = '0';
+    if (heroStars) heroStars.textContent = '★★★★★';
     return;
   }
 
@@ -199,7 +166,7 @@ function cargarCalificacionesDemo() {
   list.innerHTML = '';
   if (emptyEl) emptyEl.style.display = 'none';
 
-  reviews.slice().reverse().forEach(r => {
+  reviews.forEach(r => {
     const stars = '★'.repeat(r.stars || 5) + '☆'.repeat(5 - (r.stars || 5));
     const card = document.createElement('div');
     card.className = 'review-card';
@@ -220,45 +187,43 @@ function initReviewForm() {
   const stars = starContainer.querySelectorAll('.star');
   let rating = 5;
 
-  const paintStars = (val) => {
-    stars.forEach(s => {
-      const v = parseInt(s.dataset.val, 10);
-      s.classList.toggle('active', v <= val);
-    });
-  };
+  const paintStars = (val) => stars.forEach(s => s.classList.toggle('active', parseInt(s.dataset.val, 10) <= val));
   paintStars(rating);
 
   stars.forEach(star => {
-    star.addEventListener('click', () => {
-      rating = parseInt(star.dataset.val, 10);
-      paintStars(rating);
-    });
+    star.addEventListener('click', () => { rating = parseInt(star.dataset.val, 10); paintStars(rating); });
     star.addEventListener('mouseenter', () => paintStars(parseInt(star.dataset.val, 10)));
   });
-
   starContainer.addEventListener('mouseleave', () => paintStars(rating));
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('revName').value.trim();
     const text = document.getElementById('revText').value.trim();
     if (!name || !text) return;
 
-    const reviews = JSON.parse(localStorage.getItem('techstudio_reviews') || '[]');
-    reviews.push({ name, text, stars: rating, fecha: new Date().toISOString() });
-    localStorage.setItem('techstudio_reviews', JSON.stringify(reviews));
+    const btn = form.querySelector('button[type="submit"]');
+    const original = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Publicando...';
 
-    form.reset();
-    rating = 5;
-    paintStars(5);
-    alert('¡Gracias por su calificación!');
-    cargarCalificacionesDemo();
+    const { error } = await supabaseClient.from('reviews').insert([{ name, text, stars: rating }]);
+
+    if (error) {
+      console.error(error);
+      alert('No se pudo publicar la calificación. Intente de nuevo.');
+    } else {
+      form.reset();
+      rating = 5; paintStars(5);
+      alert('¡Gracias por su calificación!');
+      cargarCalificaciones();
+    }
+
+    btn.disabled = false;
+    btn.textContent = original;
   });
 }
 
-/* ============================================
-   FORMULARIO DE CONTACTO → SUPABASE + WHATSAPP
-   ============================================ */
 function initContactForm() {
   const form = document.getElementById('contactForm');
   if (!form) return;
@@ -283,26 +248,32 @@ function initContactForm() {
       whatsapp: document.getElementById('fieldWhatsapp').value.trim(),
       negocio: document.getElementById('fieldNegocio').value,
       proyecto: document.getElementById('fieldProyecto').value.trim() || 'No especificado',
-      mensaje: document.getElementById('fieldMensaje').value.trim(),
-      status: 'pendiente'
+      mensaje: document.getElementById('fieldMensaje').value.trim()
     };
 
     if (submitBtn && submitText) {
       submitBtn.disabled = true;
-      submitText.textContent = 'PROCESANDO SOLICITUD...';
+      submitText.textContent = 'ENVIANDO...';
     }
 
-    // Usamos supabaseClient aquí
-    const { error } = await supabaseClient.from('leads').insert([data]);
+    const { error } = await supabaseClient.from('leads').insert([{
+      nombre: data.nombre,
+      correo: data.correo,
+      whatsapp: data.whatsapp,
+      negocio: data.negocio,
+      proyecto: data.proyecto,
+      mensaje: data.mensaje,
+      status: 'pendiente'
+    }]);
 
     if (error) {
-      console.error('Error al guardar el contacto:', error);
-      alert('Hubo un error de conexión al procesar la solicitud (Asegúrese de haber desactivado RLS en Supabase).');
+      console.error('Error al guardar lead:', error);
+      alert('Hubo un error al registrar su solicitud. Intente de nuevo.');
       if (submitBtn && submitText) {
         submitBtn.disabled = false;
-        submitText.textContent = 'INICIAR PROYECTO';
+        submitText.textContent = 'AGENDAR PROYECTO POR WHATSAPP';
       }
-      return; 
+      return;
     }
 
     const fecha = new Date();
@@ -325,134 +296,12 @@ function initContactForm() {
       `━━━━━━━━━━━━━━━━━━━━\n` +
       `_Enviado desde la página web de TECHSTUDIO_`;
 
-    const urlWp = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(textoWp)}`;
-    window.open(urlWp, '_blank');
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(textoWp)}`, '_blank');
 
     form.reset();
     if (submitBtn && submitText) {
       submitBtn.disabled = false;
-      submitText.textContent = 'INICIAR PROYECTO';
+      submitText.textContent = 'AGENDAR PROYECTO POR WHATSAPP';
     }
-  });
-}
-
-/* ============================================
-   PANEL ADMINISTRADOR (LOGIN CON SUPABASE)
-   ============================================ */
-function initAdminPanel() {
-  const btnAdmin = document.getElementById('btnAdmin');
-  const modal = document.getElementById('adminModal');
-  const closeBtn = document.getElementById('closeAdminBtn');
-  const loginView = document.getElementById('adminLoginView');
-  const dashboardView = document.getElementById('adminDashboardView');
-  const loginForm = document.getElementById('adminLoginForm');
-  const btnLogout = document.getElementById('btnLogoutAdmin');
-  const btnForgot = document.getElementById('btnForgotPass');
-  const loggedUser = document.getElementById('adminLoggedUser');
-
-  if (!btnAdmin || !modal) return;
-
-  const openModal = () => { 
-    modal.classList.add('is-open'); 
-    document.body.style.overflow = 'hidden'; 
-  };
-  const closeModal = () => { 
-    modal.classList.remove('is-open'); 
-    document.body.style.overflow = ''; 
-  };
-
-  const checkSession = async () => {
-    // Usamos supabaseClient
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (session) {
-      loginView.style.display = 'none';
-      dashboardView.style.display = 'block';
-      loggedUser.textContent = `Usuario actual: ${session.user.email}`;
-    } else {
-      loginView.style.display = 'block';
-      dashboardView.style.display = 'none';
-    }
-  };
-
-  btnAdmin.addEventListener('click', (e) => {
-    e.preventDefault();
-    openModal();
-    checkSession();
-  });
-
-  closeBtn.addEventListener('click', closeModal);
-  
-  modal.addEventListener('click', (e) => {
-    if(e.target === modal) closeModal();
-  });
-
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('adminEmail').value;
-    const password = document.getElementById('adminPassword').value;
-    const btnSubmit = loginForm.querySelector('button[type="submit"]');
-    
-    btnSubmit.textContent = 'VERIFICANDO...';
-    btnSubmit.disabled = true;
-    
-    // Usamos supabaseClient
-    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-    
-    btnSubmit.textContent = 'INICIAR SESIÓN';
-    btnSubmit.disabled = false;
-    
-    if (error) {
-      alert('Error de acceso: Credenciales incorrectas o usuario no registrado.');
-    } else {
-      checkSession();
-    }
-  });
-
-  btnLogout.addEventListener('click', async () => {
-    await supabaseClient.auth.signOut();
-    checkSession();
-  });
-
-  btnForgot.addEventListener('click', async () => {
-    const email = document.getElementById('adminEmail').value.trim();
-    if (!email) { 
-      alert('Por favor, escriba su correo en el campo superior para recuperar su contraseña.'); 
-      return; 
-    }
-    
-    const { error } = await supabaseClient.auth.resetPasswordForEmail(email);
-    if (error) {
-      alert('Error: ' + error.message);
-    } else {
-      alert('Se ha enviado un enlace de recuperación a su correo electrónico.');
-    }
-  });
-}
-
-/* ============================================
-   REVEAL ON SCROLL
-   ============================================ */
-function initRevealOnScroll() {
-  if (!('IntersectionObserver' in window)) return;
-  const elements = document.querySelectorAll(
-    '.process-step, .plan-card, .storage-card, .project, .section-head, .storage__head, .review-card'
-  );
-  if (!elements.length) return;
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.style.opacity = '1';
-        entry.target.style.transform = 'translateY(0)';
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
-
-  elements.forEach(el => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(24px)';
-    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-    observer.observe(el);
   });
 }
