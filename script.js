@@ -1,26 +1,71 @@
 'use strict';
 
 /* ============================================
-   CONFIGURACIÓN
+   CONFIGURACIÓN Y SUPABASE
    ============================================ */
-const SUPABASE_URL = 'https://knpwidydhsgdudyjbnb.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_J0qEWeQpaUiZhnZ5fH7sog_tn42hXix';
-const WHATSAPP_NUMBER = '50689413632';
+const WHATSAPP_NUMBER = '50689413632'; 
+const SUPABASE_URL = 'https://knpwidydhsgdyudyjbnb.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtucHdpZHlkaHNnZHl1ZHlqYm5iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1MTQ0ODgsImV4cCI6MjEwNTA5MDQ4OH0.smLTgukqbkjezhyd3E4YtV0h7n27j80ihadxBPPkBsM';
 
+// Cambiamos el nombre a supabaseClient para evitar el SyntaxError
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
+window.addEventListener('load', () => {
+  window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+});
+window.addEventListener('beforeunload', () => {
+  window.scrollTo(0, 0);
+});
+
+// Proyectos fijos para la demo (sin base de datos por ahora)
+const PROJECTS_DEMO = [
+  {
+    id: 1,
+    category: 'salones',
+    plan: 'Básico',
+    title: 'Sala De Belleza Y Academia Victoria',
+    description: 'Página básica para salón de belleza y academia. Muestra servicios, precios y contacto directo por WhatsApp.',
+    image_url: 'belleza.png',
+    project_link: 'https://saladebellezavictoria.github.io/saladebellezavictoria/',
+    project_number: 'PROYECTO #1'
+  },
+  {
+    id: 2,
+    category: 'restaurantes',
+    plan: 'Profesional',
+    title: 'La Choza de Alejo',
+    description: 'Página profesional para restaurante. Incluye menú, galería de fotos, ubicación y reservaciones por WhatsApp.',
+    image_url: 'alejo.png',
+    project_link: 'https://chozadealejo4.github.io/choza-de-alejo/',
+    project_number: 'PROYECTO #2'
+  },
+  {
+    id: 3,
+    category: 'hoteles',
+    plan: 'Profesional',
+    title: 'ApartaHotel Playa Luna',
+    description: 'Página profesional para hotel. Muestra habitaciones, servicios, galería y sistema de reservas conectado a WhatsApp.',
+    image_url: 'luna.png',
+    project_link: 'https://chozadealejo4.github.io/apartahotelplayaluna/',
+    project_number: 'PROYECTO #3'
+  }
+];
 
 document.addEventListener('DOMContentLoaded', () => {
   initNav();
-  cargarProyectos();
-  cargarCalificaciones();
+  cargarProyectosDemo();
+  cargarCalificacionesDemo();
   initReviewForm();
-  initContactForm();
-  initAdminPanel();
+  initContactForm(); 
+  initAdminPanel();  
   initRevealOnScroll();
 });
 
 /* ============================================
-   NAV
+   NAVEGACIÓN
    ============================================ */
 function initNav() {
   const nav = document.getElementById('nav');
@@ -53,31 +98,14 @@ function initNav() {
 }
 
 /* ============================================
-   PROYECTOS
+   PROYECTOS (DEMO)
    ============================================ */
-async function cargarProyectos() {
+function cargarProyectosDemo() {
   const grid = document.getElementById('portfolioGrid');
-  const emptyMsg = document.getElementById('portfolioEmpty');
   const projectCountEl = document.getElementById('projectCount');
   if (!grid) return;
 
-  const { data: proyectos, error } = await supabaseClient
-    .from('projects')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error cargando proyectos:', error);
-    if (emptyMsg) { emptyMsg.textContent = 'Error al cargar proyectos.'; emptyMsg.classList.add('is-visible'); }
-    return;
-  }
-
-  if (!proyectos || proyectos.length === 0) {
-    if (emptyMsg) emptyMsg.classList.add('is-visible');
-    if (projectCountEl) projectCountEl.textContent = '0';
-    return;
-  }
-
+  const proyectos = PROJECTS_DEMO;
   if (projectCountEl) projectCountEl.textContent = `+${proyectos.length}`;
 
   grid.innerHTML = '';
@@ -91,21 +119,20 @@ async function cargarProyectos() {
       : `project__visual project__visual--gradient-${(index % 10) + 1}`;
 
     const visualStyle = p.image_url ? `style="background-image: url('${p.image_url}');"` : '';
-
-    const categoryLabel = p.category
-      ? p.category.charAt(0).toUpperCase() + p.category.slice(1)
-      : 'Proyecto';
+    const categoryLabel = p.category ? p.category.charAt(0).toUpperCase() + p.category.slice(1) : 'Proyecto';
+    const planBadge = p.plan ? `<span class="project__badge ${p.plan === 'Profesional' ? 'project__badge--pro' : ''}">${p.plan}</span>` : '';
 
     card.innerHTML = `
       <div class="${visualClass}" ${visualStyle}>
         <span class="project__scanline" aria-hidden="true"></span>
         <span class="project__code">${p.project_number || 'PROYECTO #' + (index + 1)}</span>
+        ${planBadge}
       </div>
       <div class="project__info">
         <span class="project__category">${categoryLabel}</span>
         <h3 class="project__title">${p.title || 'Proyecto'}</h3>
         <p class="project__desc">${p.description || 'Sitio web profesional.'}</p>
-        ${p.project_link ? `<a href="${p.project_link}" target="_blank" rel="noopener" class="project__link">Ver Proyecto →</a>` : ''}
+        ${p.project_link ? `<a href="${p.project_link}" target="_blank" rel="noopener" class="project__btn">Ver →</a>` : ''}
       </div>
     `;
     grid.appendChild(card);
@@ -114,7 +141,6 @@ async function cargarProyectos() {
   initFilters();
 }
 
-/* Filtros de portafolio */
 function initFilters() {
   const filterBtns = document.querySelectorAll('.portfolio__filter');
   const cards = document.querySelectorAll('.project');
@@ -145,27 +171,18 @@ function initFilters() {
 }
 
 /* ============================================
-   CALIFICACIONES
+   CALIFICACIONES (LOCALSTORAGE POR AHORA)
    ============================================ */
-async function cargarCalificaciones() {
+function cargarCalificacionesDemo() {
   const list = document.getElementById('reviewsList');
   const emptyEl = document.getElementById('reviewsEmpty');
   const totalEl = document.getElementById('reviewsTotalCount');
   const heroStars = document.getElementById('heroStars');
   if (!list) return;
 
-  const { data: reviews, error } = await supabaseClient
-    .from('reviews')
-    .select('*')
-    .order('created_at', { ascending: false });
+  const reviews = JSON.parse(localStorage.getItem('techstudio_reviews') || '[]');
 
-  if (error) {
-    console.error('Error cargando calificaciones:', error);
-    if (emptyEl) emptyEl.textContent = 'Error al cargar calificaciones.';
-    return;
-  }
-
-  if (!reviews || reviews.length === 0) {
+  if (!reviews.length) {
     if (emptyEl) emptyEl.textContent = 'Aún no hay calificaciones. ¡Sé el primero!';
     if (totalEl) totalEl.textContent = '0';
     return;
@@ -173,18 +190,16 @@ async function cargarCalificaciones() {
 
   if (totalEl) totalEl.textContent = reviews.length;
 
-  // Promedio de estrellas
   if (heroStars) {
     const avg = reviews.reduce((acc, r) => acc + (r.stars || 5), 0) / reviews.length;
     const full = Math.round(avg);
     heroStars.textContent = '★'.repeat(full) + '☆'.repeat(5 - full);
   }
 
-  // Render
   list.innerHTML = '';
   if (emptyEl) emptyEl.style.display = 'none';
 
-  reviews.forEach(r => {
+  reviews.slice().reverse().forEach(r => {
     const stars = '★'.repeat(r.stars || 5) + '☆'.repeat(5 - (r.stars || 5));
     const card = document.createElement('div');
     card.className = 'review-card';
@@ -197,9 +212,6 @@ async function cargarCalificaciones() {
   });
 }
 
-/* ============================================
-   FORMULARIO DE REVIEW
-   ============================================ */
 function initReviewForm() {
   const form = document.getElementById('reviewForm');
   const starContainer = document.getElementById('starSelector');
@@ -226,41 +238,26 @@ function initReviewForm() {
 
   starContainer.addEventListener('mouseleave', () => paintStars(rating));
 
-  form.addEventListener('submit', async (e) => {
+  form.addEventListener('submit', (e) => {
     e.preventDefault();
     const name = document.getElementById('revName').value.trim();
     const text = document.getElementById('revText').value.trim();
     if (!name || !text) return;
 
-    const btn = form.querySelector('button[type="submit"]');
-    const original = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = 'Publicando...';
-
-    const { error } = await supabaseClient
-      .from('reviews')
-      .insert([{ name, text, stars: rating }]);
-
-    if (error) {
-      console.error(error);
-      alert('No se pudo publicar la calificación. Intente de nuevo.');
-      btn.disabled = false;
-      btn.textContent = original;
-      return;
-    }
+    const reviews = JSON.parse(localStorage.getItem('techstudio_reviews') || '[]');
+    reviews.push({ name, text, stars: rating, fecha: new Date().toISOString() });
+    localStorage.setItem('techstudio_reviews', JSON.stringify(reviews));
 
     form.reset();
     rating = 5;
     paintStars(5);
-    btn.disabled = false;
-    btn.textContent = original;
     alert('¡Gracias por su calificación!');
-    cargarCalificaciones();
+    cargarCalificacionesDemo();
   });
 }
 
 /* ============================================
-   FORMULARIO DE CONTACTO
+   FORMULARIO DE CONTACTO → SUPABASE + WHATSAPP
    ============================================ */
 function initContactForm() {
   const form = document.getElementById('contactForm');
@@ -269,7 +266,6 @@ function initContactForm() {
   const submitBtn = document.getElementById('submitBtn');
   const submitText = document.getElementById('submitText');
 
-  // Pre-llenar el campo "Proyecto" si el usuario hizo click en "Quiero este plan"
   document.querySelectorAll('.plan-card__cta').forEach(btn => {
     btn.addEventListener('click', () => {
       const plan = btn.dataset.plan;
@@ -287,46 +283,50 @@ function initContactForm() {
       whatsapp: document.getElementById('fieldWhatsapp').value.trim(),
       negocio: document.getElementById('fieldNegocio').value,
       proyecto: document.getElementById('fieldProyecto').value.trim() || 'No especificado',
-      mensaje: document.getElementById('fieldMensaje').value.trim()
+      mensaje: document.getElementById('fieldMensaje').value.trim(),
+      status: 'pendiente'
     };
 
     if (submitBtn && submitText) {
       submitBtn.disabled = true;
-      submitText.textContent = 'ENVIANDO...';
+      submitText.textContent = 'PROCESANDO SOLICITUD...';
     }
 
-    // 1. Guardar en Supabase
-    const { error } = await supabaseClient.from('leads').insert([{
-      nombre: data.nombre,
-      correo: data.correo,
-      whatsapp: data.whatsapp,
-      negocio: data.negocio,
-      proyecto: data.proyecto,
-      mensaje: data.mensaje,
-      status: 'pendiente'
-    }]);
+    // Usamos supabaseClient aquí
+    const { error } = await supabaseClient.from('leads').insert([data]);
 
     if (error) {
-      console.error('Error al guardar lead:', error);
-      alert('Hubo un error al registrar su solicitud. Intente de nuevo.');
+      console.error('Error al guardar el contacto:', error);
+      alert('Hubo un error de conexión al procesar la solicitud (Asegúrese de haber desactivado RLS en Supabase).');
       if (submitBtn && submitText) {
         submitBtn.disabled = false;
         submitText.textContent = 'INICIAR PROYECTO';
       }
-      return;
+      return; 
     }
 
-    // 2. Abrir WhatsApp con mensaje prellenado
-    const textoWp =
-      `¡Hola! Quiero iniciar un proyecto web.\n\n` +
-      `*Nombre:* ${data.nombre}\n` +
-      `*Correo:* ${data.correo}\n` +
-      `*WhatsApp:* ${data.whatsapp}\n` +
-      `*Tipo de negocio:* ${data.negocio}\n` +
-      `*Proyecto de interés:* ${data.proyecto}\n\n` +
-      `*Mensaje:*\n${data.mensaje}`;
+    const fecha = new Date();
+    const fechaTexto = fecha.toLocaleDateString('es-CR', { day: '2-digit', month: 'long', year: 'numeric' });
+    const horaTexto = fecha.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit' });
+    const idSolicitud = 'WEB-' + Date.now().toString().slice(-6);
 
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(textoWp)}`, '_blank');
+    const textoWp =
+      `*NUEVA SOLICITUD DE PROYECTO WEB*\n` +
+      `━━━━━━━━━━━━━━━━━━━━\n\n` +
+      `*ID de solicitud:* ${idSolicitud}\n` +
+      `*Fecha:* ${fechaTexto} a las ${horaTexto}\n\n` +
+      `*DATOS DEL CLIENTE:*\n` +
+      `• Nombre: ${data.nombre}\n` +
+      `• Correo: ${data.correo}\n` +
+      `• WhatsApp: ${data.whatsapp}\n` +
+      `• Tipo de negocio: ${data.negocio}\n` +
+      `• Proyecto de interés: ${data.proyecto}\n\n` +
+      `*MENSAJE DEL CLIENTE:*\n${data.mensaje}\n\n` +
+      `━━━━━━━━━━━━━━━━━━━━\n` +
+      `_Enviado desde la página web de TECHSTUDIO_`;
+
+    const urlWp = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(textoWp)}`;
+    window.open(urlWp, '_blank');
 
     form.reset();
     if (submitBtn && submitText) {
@@ -337,7 +337,7 @@ function initContactForm() {
 }
 
 /* ============================================
-   PANEL DE ADMINISTRACIÓN
+   PANEL ADMINISTRADOR (LOGIN CON SUPABASE)
    ============================================ */
 function initAdminPanel() {
   const btnAdmin = document.getElementById('btnAdmin');
@@ -346,166 +346,87 @@ function initAdminPanel() {
   const loginView = document.getElementById('adminLoginView');
   const dashboardView = document.getElementById('adminDashboardView');
   const loginForm = document.getElementById('adminLoginForm');
-  const loggedUser = document.getElementById('adminLoggedUser');
   const btnLogout = document.getElementById('btnLogoutAdmin');
   const btnForgot = document.getElementById('btnForgotPass');
-  const tabs = document.querySelectorAll('.admin-tab');
-  const sectionPend = document.getElementById('sectionPendientes');
-  const sectionTerm = document.getElementById('sectionTerminados');
+  const loggedUser = document.getElementById('adminLoggedUser');
 
   if (!btnAdmin || !modal) return;
 
-  const openModal = () => { modal.classList.add('is-open'); document.body.style.overflow = 'hidden'; };
-  const closeModal = () => { modal.classList.remove('is-open'); document.body.style.overflow = ''; };
+  const openModal = () => { 
+    modal.classList.add('is-open'); 
+    document.body.style.overflow = 'hidden'; 
+  };
+  const closeModal = () => { 
+    modal.classList.remove('is-open'); 
+    document.body.style.overflow = ''; 
+  };
 
-  btnAdmin.addEventListener('click', async (e) => {
-    e.preventDefault();
-    openModal();
-    // Verificar sesión activa
+  const checkSession = async () => {
+    // Usamos supabaseClient
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) {
       loginView.style.display = 'none';
       dashboardView.style.display = 'block';
-      loggedUser.textContent = `Sesión: ${session.user.email}`;
-      cargarLeads();
+      loggedUser.textContent = `Usuario actual: ${session.user.email}`;
     } else {
       loginView.style.display = 'block';
       dashboardView.style.display = 'none';
     }
+  };
+
+  btnAdmin.addEventListener('click', (e) => {
+    e.preventDefault();
+    openModal();
+    checkSession();
   });
 
   closeBtn.addEventListener('click', closeModal);
-
+  
   modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeModal();
+    if(e.target === modal) closeModal();
   });
 
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('adminEmail').value;
     const password = document.getElementById('adminPassword').value;
-
-    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-
+    const btnSubmit = loginForm.querySelector('button[type="submit"]');
+    
+    btnSubmit.textContent = 'VERIFICANDO...';
+    btnSubmit.disabled = true;
+    
+    // Usamos supabaseClient
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    
+    btnSubmit.textContent = 'INICIAR SESIÓN';
+    btnSubmit.disabled = false;
+    
     if (error) {
-      alert('Credenciales incorrectas: ' + error.message);
-      return;
+      alert('Error de acceso: Credenciales incorrectas o usuario no registrado.');
+    } else {
+      checkSession();
     }
-
-    loginView.style.display = 'none';
-    dashboardView.style.display = 'block';
-    loggedUser.textContent = `Sesión: ${data.user.email}`;
-    cargarLeads();
   });
 
   btnLogout.addEventListener('click', async () => {
     await supabaseClient.auth.signOut();
-    loginView.style.display = 'block';
-    dashboardView.style.display = 'none';
-    document.getElementById('adminLoginForm').reset();
+    checkSession();
   });
 
-  if (btnForgot) {
-    btnForgot.addEventListener('click', async () => {
-      const email = document.getElementById('adminEmail').value.trim();
-      if (!email) { alert('Escriba su correo primero.'); return; }
-      const { error } = await supabaseClient.auth.resetPasswordForEmail(email);
-      if (error) alert('Error: ' + error.message);
-      else alert('Se envió un enlace de recuperación a su correo.');
-    });
-  }
-
-  // Tabs
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      const target = tab.dataset.target;
-      sectionPend.style.display = target === 'pendientes' ? 'block' : 'none';
-      sectionTerm.style.display = target === 'terminados' ? 'block' : 'none';
-    });
+  btnForgot.addEventListener('click', async () => {
+    const email = document.getElementById('adminEmail').value.trim();
+    if (!email) { 
+      alert('Por favor, escriba su correo en el campo superior para recuperar su contraseña.'); 
+      return; 
+    }
+    
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(email);
+    if (error) {
+      alert('Error: ' + error.message);
+    } else {
+      alert('Se ha enviado un enlace de recuperación a su correo electrónico.');
+    }
   });
-}
-
-async function cargarLeads() {
-  const pendContainer = document.getElementById('adminLeadsContainer');
-  const termContainer = document.getElementById('adminCompletedContainer');
-  if (!pendContainer || !termContainer) return;
-
-  const { data: leads, error } = await supabaseClient
-    .from('leads')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error cargando leads:', error);
-    return;
-  }
-
-  const pendientes = leads.filter(l => l.status !== 'terminado');
-  const terminados = leads.filter(l => l.status === 'terminado');
-
-  pendContainer.innerHTML = pendientes.length
-    ? pendientes.map(renderLeadCard).join('')
-    : '<p style="color: var(--color-text-muted); text-align:center; padding: 20px;">No hay leads pendientes.</p>';
-
-  termContainer.innerHTML = terminados.length
-    ? terminados.map(renderLeadCard).join('')
-    : '<p style="color: var(--color-text-muted); text-align:center; padding: 20px;">Aún no hay leads terminados.</p>';
-
-  // Eventos
-  document.querySelectorAll('[data-action="complete"]').forEach(b => {
-    b.addEventListener('click', () => actualizarLead(b.dataset.id, 'terminado'));
-  });
-  document.querySelectorAll('[data-action="reopen"]').forEach(b => {
-    b.addEventListener('click', () => actualizarLead(b.dataset.id, 'pendiente'));
-  });
-  document.querySelectorAll('[data-action="delete"]').forEach(b => {
-    b.addEventListener('click', () => eliminarLead(b.dataset.id));
-  });
-}
-
-function renderLeadCard(lead) {
-  const fecha = new Date(lead.created_at).toLocaleDateString('es-CR', {
-    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
-  });
-
-  const isDone = lead.status === 'terminado';
-
-  return `
-    <div class="lead-card">
-      <div class="lead-card__header">
-        <span class="lead-card__name">${lead.nombre || 'Sin nombre'}</span>
-        <span class="lead-card__badge">${isDone ? 'Terminado' : 'Pendiente'}</span>
-      </div>
-      <p class="lead-card__meta">
-        📱 ${lead.whatsapp || '—'} &nbsp;|&nbsp; ✉️ ${lead.correo || '—'}<br>
-        🏢 ${lead.negocio || '—'} &nbsp;|&nbsp; 🎯 ${lead.proyecto || '—'}<br>
-        📅 ${fecha}
-      </p>
-      <p class="lead-card__message">${lead.mensaje || ''}</p>
-      <div class="lead-card__actions">
-        ${!isDone
-          ? `<button class="lead-card__btn lead-card__btn--done" data-action="complete" data-id="${lead.id}">✓ Marcar terminado</button>`
-          : `<button class="lead-card__btn" data-action="reopen" data-id="${lead.id}">↺ Reabrir</button>`}
-        <a class="lead-card__btn" href="https://wa.me/${(lead.whatsapp || '').replace(/\D/g, '')}" target="_blank" rel="noopener">💬 WhatsApp</a>
-        <button class="lead-card__btn lead-card__btn--delete" data-action="delete" data-id="${lead.id}">🗑 Eliminar</button>
-      </div>
-    </div>
-  `;
-}
-
-async function actualizarLead(id, status) {
-  const { error } = await supabaseClient.from('leads').update({ status }).eq('id', id);
-  if (error) { alert('Error al actualizar'); return; }
-  cargarLeads();
-}
-
-async function eliminarLead(id) {
-  if (!confirm('¿Eliminar este lead definitivamente?')) return;
-  const { error } = await supabaseClient.from('leads').delete().eq('id', id);
-  if (error) { alert('Error al eliminar'); return; }
-  cargarLeads();
 }
 
 /* ============================================
